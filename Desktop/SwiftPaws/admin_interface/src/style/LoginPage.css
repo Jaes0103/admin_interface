@@ -1,0 +1,159 @@
+/* Global Box-Sizing */ 
+* {
+  box-sizing: border-box; /* Apply this globally */
+}
+
+/* Body Styles */
+body {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */ 
+  background-size: cover; /* Ensures the image covers the area */
+  background-image: url('../assets/images/bantay_hayop_logo.png');
+  background-attachment: fixed; /* Keeps the background fixed */
+  background-position: left; /* Centers the background image */
+  height: 100vh; /* Sets the height to 100% of the viewport height */
+  margin: 0; /* Removes default margin */
+}
+
+/* Main Container Styles */
+
+
+/* Login Container Styles */
+.login-container {
+  background-color: #ffffff; /* White background */
+  padding: 25px; /* Increase padding for more space */
+  width: 100%; 
+  height: 100%;
+  padding: 10px 75px 55px 75px;
+  max-width: 1000px; 
+  margin-top: 150px;
+  margin-right: 300px;
+  margin-left:  auto; /* Center the container with space above and below */
+  margin-bottom: 100px;
+  border-radius: 20px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+  
+/* Image Styles */
+.login-container img {
+  display: block; /* Ensure the image is a block element */
+  margin: 0 auto; /* Center the image */
+  width: 250px; /* Set width */
+  height: 250px; /* Set height */
+}
+
+/* Title Styles */
+.login-title h2,
+.login-title h3,
+.login-container h2,
+.login-container h3 {
+  text-align: center; /* Center titles */
+  color: #8a7ebe; /* Custom color */
+  font-family: 'Poppins', sans-serif; /* Font family */
+  margin-bottom: 0; /* Remove bottom margin */
+}
+
+.login-title h2 {
+  font-weight: bold; /* Bold text */
+  font-size: 55px; /* Title size */
+}
+
+.login-title h3 {
+  font-weight: bold; /* Bold text */
+  font-size: 45px; /* Title size */
+}
+
+.login-container h2 {
+  font-size: 50px; /* Font size */
+  margin-top: 0; /* No top margin */
+}
+
+.login-container h3 {
+  font-size: 30px; /* Font size */
+  margin-top: 0; /* No top margin */
+}
+
+/* Error Message Styles */
+.error-message {
+  color: red; /* Error message color */
+  text-align: center; /* Center text */
+}
+
+/* Input Label Styles */
+.input-label {
+  font-family: 'Poppins', sans-serif; /* Font family */
+  font-weight: 600; /* Semi-bold text */
+  font-size: 16px; /* Font size */
+  color: #8a7ebe; /* Custom color */
+  margin-bottom: 8px; /* Space below the label */
+}
+
+/* Input Field Styles */
+.input-field {
+  width: 100%; /* Full width */
+  padding: 16px; /* Increase padding inside input */
+  border-radius: 15px; /* Rounded corners */
+  border: 1px solid #ddd; /* Light gray border */
+  margin-bottom: 16px; /* Space below input */
+  font-size: 18px; /* Increase font size for better visibility */
+  min-height: 50px; /* Set minimum height for the input field */
+}
+
+/* Password Container Styles */
+.password-container {
+  position: relative; /* Allow absolute positioning of button */
+}
+
+/* Password Toggle Button Styles */
+.password-toggle {
+  position: absolute; /* Position it absolutely */
+  right: 15px; /* Adjust space from the right for better positioning */
+  top: 50%; /* Center vertically */
+  transform: translateY(-50%); /* Adjust to center */
+  background: none; /* No background */
+  border: none; /* No border */
+  color: #8a7ebe; /* Custom color */
+  cursor: pointer; /* Pointer cursor on hover */
+}
+
+/* Login Button Styles */
+.login-button {
+  width: 100%; /* Full width */
+  padding: 16px; /* Padding */
+  background-color: #8a7ebe; /* Custom background color */
+  border: none; /* No border */
+  border-radius: 10px; /* Rounded corners */
+  color: #ffffff; /* White text */
+  font-size: 18px; /* Font size */
+  cursor: pointer; /* Pointer cursor */
+}
+
+/* Login Button Hover Effect */
+.login-button:hover {
+  background-color: #7a6eab; /* Darker shade on hover */
+}
+
+/* Forgot Password Styles */
+.forgot-password {
+  display: inline-block; /* Make it inline-block to allow styling */
+  color: #8a7ebe; /* Custom color */
+  font-size: 18px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  text-decoration: none; /* Remove underline */
+}
+
+/* Register Link Styles */
+.register-link {
+  text-align: center; /* Center text */
+  color: #888; /* Light gray color */
+}
+
+.register-link a {
+  color: #8a7ebe; /* Custom link color */
+  text-decoration: none; /* No underline */
+}
+
+.register-link a:hover {
+  text-decoration: underline; /* Underline on hover */
+}

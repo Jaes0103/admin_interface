@@ -1,0 +1,196 @@
+.adoptable-animals-container {
+    background-color: whitesmoke;
+    margin-top: 80px;
+}
+
+/* Title and Button Container */
+.container {
+    display: flex;
+    justify-content: space-between; /* Align title to the left and button to the right */
+    align-items: center; /* Center vertically */
+    margin-bottom: 20px; /* Add some spacing below the title and button */
+    padding-right: 10px;
+}
+
+/* Button Style */
+.add-animal-button {
+    padding: 12px 20px;
+    background-color: #624DE3; /* Button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    margin-top: 150px;
+    margin-right: 0%;
+    margin-bottom: 0%;
+}
+
+.add-animal-button:hover {
+    background-color: #5039c2; /* Darken on hover */
+}
+
+/* Modal Overlay */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark background */
+    overflow: hidden; /* Prevent scrolling when modal is open */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fff;
+    padding: 30px; /* Increased padding for more white space */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); /* Slight shadow for depth */
+    width: 90% !important; /* Ensure 90% width */
+    max-width: 500px !important; /* Maximum width */
+    font-family: Arial, sans-serif; /* Consistent font family */
+    position: relative; /* Ensure close button aligns well */
+    margin: 0 auto; /* Centered */
+}
+
+/* Dialog Overlay */
+.dialog-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Dialog Box */
+.dialog-box {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90% !important; /* Ensure 90% width */
+    max-width: 900px !important; /* Increased max-width for a wider dialog box */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    margin: auto; /* Center the dialog box */
+    box-sizing: border-box; /* Ensure padding is included in width calculation */
+}
+
+/* Ensure the dialog box remains responsive on smaller screens */
+@media (max-width: 600px) {
+    .dialog-box {
+        max-width: 100% !important; /* Full width on small screens */
+        padding: 15px;   /* Reduce padding for mobile */
+    }
+}/* Table Styles */
+.adoptable-animals-table {
+    width: 80%; /* Ensure the table takes the full width */
+    border-collapse: collapse; /* Collapse borders */
+    margin-left: 300px;
+}
+
+.adoptable-animals-table th, .adoptable-animals-table td {
+    padding: 10px; /* Spacing in cells */
+    border: 1px solid #ccc; /* Add borders */
+    text-align: left; /* Align text to the left */
+}
+
+.adoptable-animals-table img {
+    max-width: 100px; /* Set max width for images */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .adoptable-animals-table {
+        font-size: 0.9em; /* Smaller font on mobile */
+    }
+}
+
+
+/* Close Button */
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close:hover {
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Two-column layout for form fields */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Keeps two-column layout */
+    gap: 20px; /* Space between form items */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+
+button[type="submit"],
+button[type="button"] {
+    padding: 12px 20px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* Full width buttons */
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"] {
+    background-color: #624DE3;
+    color: white;
+}
+
+button[type="button"] {
+    background-color: #f44336;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+img {
+    display: block;
+    margin-top: 10px;
+}
