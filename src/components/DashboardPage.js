@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../style/DashboardPage.css'; 
@@ -6,7 +5,6 @@ import Sidebar from './Sidebar';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels'; 
-
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
@@ -18,6 +16,11 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [totalReports, setTotalReports] = useState(0);
+
+  // Pagination states
+  const [currentPageReports, setCurrentPageReports] = useState(1);
+  const [currentPageAnimals, setCurrentPageAnimals] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -95,7 +98,7 @@ const DashboardPage = () => {
 
   const doughnutOptions = {
     responsive: true,
-    maintainAspectRatio: false, // Allow custom size
+    maintainAspectRatio: false, 
     plugins: {
       legend: {
         display: false,
@@ -105,17 +108,17 @@ const DashboardPage = () => {
       },
       datalabels: {
         display: true,
-        color: 'rgba(138, 126, 190, 1)', // Set the font color here
+        color: 'rgba(138, 126, 190, 1)',
         formatter: (value, context) => {
           if (context.dataIndex === 0) {
-            return `${totalReports}`; // Total reported animals
+            return `${totalReports}`; 
           }
-          return ''; // Hide for the second section
+          return ''; 
         },
         font: {
           weight: 'bold',
           size: '30',
-          color: 'rgba(138, 126, 190, 1)', // Add this line for font color
+          color: 'rgba(138, 126, 190, 1)',
         },
         anchor: 'center',
         align: 'center',
@@ -125,6 +128,22 @@ const DashboardPage = () => {
     rotation: 240,
     circumference: 240,
   };
+
+  // Pagination logic for reports
+  const indexOfLastReport = currentPageReports * itemsPerPage;
+  const indexOfFirstReport = indexOfLastReport - itemsPerPage;
+  const currentReports = reports.slice(indexOfFirstReport, indexOfLastReport);
+  const totalPagesReports = Math.ceil(reports.length / itemsPerPage);
+
+  const paginateReports = (pageNumber) => setCurrentPageReports(pageNumber);
+
+  // Pagination logic for adoptable animals
+  const indexOfLastAnimal = currentPageAnimals * itemsPerPage;
+  const indexOfFirstAnimal = indexOfLastAnimal - itemsPerPage;
+  const currentAnimals = adoptableAnimals.slice(indexOfFirstAnimal, indexOfLastAnimal);
+  const totalPagesAnimals = Math.ceil(adoptableAnimals.length / itemsPerPage);
+
+  const paginateAnimals = (pageNumber) => setCurrentPageAnimals(pageNumber);
 
   if (loading) {
     return <p>Loading data...</p>;
@@ -141,7 +160,7 @@ const DashboardPage = () => {
         <h1>Admin Dashboard</h1>
           <section className="dashboard-section">
             <h2>Reports</h2>
-            {reports.length === 0 ? (
+            {currentReports.length === 0 ? (
               <p>No reports available.</p>
             ) : (
               <table className="dashboard-table">
@@ -156,7 +175,7 @@ const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((report) => (
+                  {currentReports.map((report) => (
                     <tr key={report.id}>
                       <td>{report.id}</td>
                       <td>{report.animal_type}</td>
@@ -169,10 +188,22 @@ const DashboardPage = () => {
                 </tbody>
               </table>
             )}
-  
+            <div className="pagination">
+              {Array.from({ length: totalPagesReports }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => paginateReports(i + 1)}
+                  className={currentPageReports === i + 1 ? 'active' : ''}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          </section>
+
           <section className="dashboard-section">
             <h2>Adoptable Animals</h2>
-            {adoptableAnimals.length === 0 ? (
+            {currentAnimals.length === 0 ? (
               <p>No adoptable animals available.</p>
             ) : (
               <table className="dashboard-table">
@@ -188,7 +219,7 @@ const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {adoptableAnimals.map((animal) => (
+                  {currentAnimals.map((animal) => (
                     <tr key={animal.id}>
                       <td>{animal.id}</td>
                       <td>{animal.name}</td>
@@ -202,9 +233,20 @@ const DashboardPage = () => {
                 </tbody>
               </table>
             )}
+            <div className="pagination">
+              {Array.from({ length: totalPagesAnimals }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => paginateAnimals(i + 1)}
+                  className={currentPageAnimals === i + 1 ? 'active' : ''}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
           </section>
-        </section>
       </div>
+
       <div className='chart-position'>
         <section className="chart-section">
           <h2>Reports vs Rescued Animals</h2>
@@ -227,5 +269,6 @@ const DashboardPage = () => {
       </div>
     </div>
   );
-          }  
+}; 
+
 export default DashboardPage;
