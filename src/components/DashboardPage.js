@@ -5,13 +5,14 @@ import Sidebar from './Sidebar';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels'; 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
 const DashboardPage = () => {
   const [reports, setReports] = useState([]);
   const [adoptableAnimals, setAdoptableAnimals] = useState([]);
-  const [rescuedAnimals, setRescuedAnimals] = useState([]);
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,13 +26,12 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const url =`${process.env.REACT_APP_BASE_URL}/api/admin/dashboard`;
+        const url = `${process.env.REACT_APP_BASE_URL}/api/admin/dashboard`;
         const response = await axios.get(url);
         
-        if (response.data && response.data.reports && response.data.adoptableAnimals && response.data.rescuedAnimals) {
+        if (response.data && response.data.reports && response.data.adoptableAnimals) {
           setReports(response.data.reports);
           setAdoptableAnimals(response.data.adoptableAnimals);
-          setRescuedAnimals(response.data.rescuedAnimals);
           const reportCounts = getCountsByMonth(response.data.reports, 'created_at');
           const rescuedCounts = getCountsByMonth(response.data.rescuedAnimals, 'rescued_date');
           setChartData(generateChartData(reportCounts, rescuedCounts));
@@ -118,7 +118,7 @@ const DashboardPage = () => {
         font: {
           weight: 'bold',
           size: '30',
-          color: 'rgba(138, 126, 190, 1)',
+          color: 'rgba(138, 126, 190, 1)', 
         },
         anchor: 'center',
         align: 'center',
@@ -135,7 +135,17 @@ const DashboardPage = () => {
   const currentReports = reports.slice(indexOfFirstReport, indexOfLastReport);
   const totalPagesReports = Math.ceil(reports.length / itemsPerPage);
 
-  const paginateReports = (pageNumber) => setCurrentPageReports(pageNumber);
+  const handleNextReports = () => {
+    if (currentPageReports < totalPagesReports) {
+      setCurrentPageReports(currentPageReports + 1);
+    }
+  };
+
+  const handlePreviousReports = () => {
+    if (currentPageReports > 1) {
+      setCurrentPageReports(currentPageReports - 1);
+    }
+  };
 
   // Pagination logic for adoptable animals
   const indexOfLastAnimal = currentPageAnimals * itemsPerPage;
@@ -143,7 +153,17 @@ const DashboardPage = () => {
   const currentAnimals = adoptableAnimals.slice(indexOfFirstAnimal, indexOfLastAnimal);
   const totalPagesAnimals = Math.ceil(adoptableAnimals.length / itemsPerPage);
 
-  const paginateAnimals = (pageNumber) => setCurrentPageAnimals(pageNumber);
+  const handleNextAnimals = () => {
+    if (currentPageAnimals < totalPagesAnimals) {
+      setCurrentPageAnimals(currentPageAnimals + 1);
+    }
+  };
+
+  const handlePreviousAnimals = () => {
+    if (currentPageAnimals > 1) {
+      setCurrentPageAnimals(currentPageAnimals - 1);
+    }
+  };
 
   if (loading) {
     return <p>Loading data...</p>;
@@ -158,93 +178,90 @@ const DashboardPage = () => {
       <Sidebar />
       <div className="main-content">
         <h1>Admin Dashboard</h1>
-          <section className="dashboard-section">
-            <h2>Reports</h2>
-            {currentReports.length === 0 ? (
-              <p>No reports available.</p>
-            ) : (
-              <table className="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Animal Type</th>
-                    <th>Details</th>
-                    <th>Cruelty Details</th>
-                    <th>Date Created</th>
-                    <th>Status</th>
+        
+        <section className="dashboard-section">
+          <h2>Reports</h2>
+          {currentReports.length === 0 ? (
+            <p>No reports available.</p>
+          ) : (
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Animal Type</th>
+                  <th>Details</th>
+                  <th>Cruelty Details</th>
+                  <th>Date Created</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentReports.map((report) => (
+                  <tr key={report.id}>
+                    <td>{report.id}</td>
+                    <td>{report.animal_type}</td>
+                    <td>{report.animal_details}</td>
+                    <td>{report.cruelty_details}</td>
+                    <td>{new Date(report.created_at).toLocaleDateString()}</td>
+                    <td>{report.status}</td> 
                   </tr>
-                </thead>
-                <tbody>
-                  {currentReports.map((report) => (
-                    <tr key={report.id}>
-                      <td>{report.id}</td>
-                      <td>{report.animal_type}</td>
-                      <td>{report.animal_details}</td>
-                      <td>{report.cruelty_details}</td>
-                      <td>{new Date(report.created_at).toLocaleDateString()}</td>
-                      <td>{report.status}</td> 
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <div className="pagination">
-              {Array.from({ length: totalPagesReports }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => paginateReports(i + 1)}
-                  className={currentPageReports === i + 1 ? 'active' : ''}
-                >
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          </section>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <div className="pagination">
+            <button onClick={handlePreviousReports} disabled={currentPageReports === 1}>
+              <FontAwesomeIcon icon={faChevronLeft} />
+            </button>
+            <span>{currentPageReports} of {totalPagesReports}</span>
+            <button onClick={handleNextReports} disabled={currentPageReports === totalPagesReports}>
+              <FontAwesomeIcon icon={faChevronRight} />
+            </button>
+          </div>
+        </section>
 
-          <section className="dashboard-section">
-            <h2>Adoptable Animals</h2>
-            {currentAnimals.length === 0 ? (
-              <p>No adoptable animals available.</p>
-            ) : (
-              <table className="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Breed</th>
-                    <th>Age</th>
-                    <th>Personality</th>
-                    <th>Health Status</th>
+        <section className="dashboard-section">
+          <h2>Adoptable Animals</h2>
+          {currentAnimals.length === 0 ? (
+            <p>No adoptable animals available.</p>
+          ) : (
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Breed</th>
+                  <th>Age</th>
+                  <th>Personality</th>
+                  <th>Health Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentAnimals.map((animal) => (
+                  <tr key={animal.id}>
+                    <td>{animal.id}</td>
+                    <td>{animal.name}</td>
+                    <td>{animal.type}</td>
+                    <td>{animal.breed}</td>
+                    <td>{animal.age}</td>
+                    <td>{animal.personality}</td>
+                    <td>{animal.health_status}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {currentAnimals.map((animal) => (
-                    <tr key={animal.id}>
-                      <td>{animal.id}</td>
-                      <td>{animal.name}</td>
-                      <td>{animal.type}</td>
-                      <td>{animal.breed}</td>
-                      <td>{animal.age}</td>
-                      <td>{animal.personality}</td>
-                      <td>{animal.health_status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <div className="pagination">
-              {Array.from({ length: totalPagesAnimals }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => paginateAnimals(i + 1)}
-                  className={currentPageAnimals === i + 1 ? 'active' : ''}
-                >
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          </section>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <div className="pagination">
+            <button onClick={handlePreviousAnimals} disabled={currentPageAnimals === 1}>
+              <FontAwesomeIcon icon={faChevronLeft} />
+            </button>
+            <span>{currentPageAnimals} of {totalPagesAnimals}</span>
+            <button onClick={handleNextAnimals} disabled={currentPageAnimals === totalPagesAnimals}>
+              <FontAwesomeIcon icon={faChevronRight} />
+            </button>
+          </div>
+        </section>
       </div>
 
       <div className='chart-position'>
@@ -256,7 +273,7 @@ const DashboardPage = () => {
             <p>No data available for the chart.</p>
           )}
         </section>
-  
+
         <section className="doughnut-section">
           <h2>Total Reported Animals</h2>
           <div className="doughnut-container">
@@ -269,6 +286,6 @@ const DashboardPage = () => {
       </div>
     </div>
   );
-}; 
+};
 
 export default DashboardPage;

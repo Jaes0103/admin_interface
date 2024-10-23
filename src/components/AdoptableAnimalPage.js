@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../style/AdoptableAnimalsPage.css';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import Sidebar from './Sidebar';
 
@@ -14,7 +14,6 @@ const AdoptableAnimalsPage = () => {
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const [animalToDelete, setAnimalToDelete] = useState(null);
     const [deleteMessage, setDeleteMessage] = useState('');
-
     const [newAnimal, setNewAnimal] = useState({
         id: null,
         name: '',
@@ -30,6 +29,10 @@ const AdoptableAnimalsPage = () => {
         img: null,
         imgurl: '',
     });
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5; // Set how many items per page
 
     const fetchAdoptableAnimals = async () => {
         try {
@@ -60,7 +63,6 @@ const AdoptableAnimalsPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData();
-
         Object.keys(newAnimal).forEach((key) => {
             formData.append(key, newAnimal[key]);
         });
@@ -69,9 +71,7 @@ const AdoptableAnimalsPage = () => {
             const url = editMode
                 ? `${process.env.REACT_APP_BASE_URL}/api/admin/update-adoptable-animal/${newAnimal.id}`
                 : `${process.env.REACT_APP_BASE_URL}/api/admin/add-adoptable-animal`;
-
             const method = editMode ? 'put' : 'post';
-
             const response = await axios[method](url, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -126,7 +126,6 @@ const AdoptableAnimalsPage = () => {
         }
     };
     
-    
     const confirmDelete = async () => {
         console.log(`Attempting to confirm delete for animal ID: ${animalToDelete}`);
         const url = `${process.env.REACT_APP_BASE_URL}/api/admin/delete-adoptable-animal/${animalToDelete}`;
@@ -141,7 +140,7 @@ const AdoptableAnimalsPage = () => {
         } finally {
             setDeleteModalOpen(false);
             setAnimalToDelete(null);
-            setDeleteMessage(''); // Reset the delete message
+            setDeleteMessage(''); 
         }
     };
 
@@ -174,6 +173,23 @@ const AdoptableAnimalsPage = () => {
         setModalOpen(!isModalOpen);
     };
 
+    
+    const totalPages = Math.ceil(adoptableAnimals.length / itemsPerPage);
+
+    const displayedAnimals = adoptableAnimals.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage((prev) => prev - 1);
+        }
+    };
+
     if (loading) {
         return <p>Loading adoptable animals...</p>;
     }
@@ -184,11 +200,11 @@ const AdoptableAnimalsPage = () => {
 
     return (
         <div className="adoptable-animals-container">
-        <Sidebar/>
-        <div className='container'>
-            <h1>Adoptable Animals</h1>
-            <button className='add-animal-button' onClick={toggleModal}>Add Adoptable Animal</button>
-        </div>
+            <Sidebar />
+            <div className='container'>
+                <h1>Adoptable Animals</h1>
+                <button className='add-animal-button' onClick={toggleModal}>Add Adoptable Animal</button>
+            </div>
             {isModalOpen && (
                 <div className="dialog-overlay">
                     <div className="dialog-box">
@@ -270,15 +286,15 @@ const AdoptableAnimalsPage = () => {
                                 </div>
                                 
                                 <div className="form-group">
-                                <label>Shelter:</label>
-                                <input
-                                    type="text"
-                                    name="shelter"
-                                    value={newAnimal.shelter}
-                                    onChange={handleAnimalChange}
-                                    required
-                                />
-                            </div>
+                                    <label>Shelter:</label>
+                                    <input
+                                        type="text"
+                                        name="shelter"
+                                        value={newAnimal.shelter}
+                                        onChange={handleAnimalChange}
+                                        required
+                                    />
+                                </div>
                             </div>
 
                             {/* Image display section */}
@@ -316,17 +332,17 @@ const AdoptableAnimalsPage = () => {
                                     required
                                 />
                             </div>
-                                    {/* Background field moved here */}
-                                <div className="form-group">
-                                    <label>Background:</label>
-                                    <input
-                                        type="text"
-                                        name="background"
-                                        value={newAnimal.background}
-                                        onChange={handleAnimalChange}
-                                        required
-                                    />
-                                </div>
+                            {/* Background field moved here */}
+                            <div className="form-group">
+                                <label>Background:</label>
+                                <input
+                                    type="text"
+                                    name="background"
+                                    value={newAnimal.background}
+                                    onChange={handleAnimalChange}
+                                    required
+                                />
+                            </div>
                             <button type="submit">
                                 {editMode ? 'Update Animal' : 'Add Animal'}
                             </button>
@@ -349,59 +365,70 @@ const AdoptableAnimalsPage = () => {
             {adoptableAnimals.length === 0 ? (
                 <p>No adoptable animals available.</p>
             ) : (
-                <table className="adoptable-animals-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Breed</th>
-                            <th>Age</th>
-                            <th>Size</th>
-                            <th>Personality</th>
-                            <th>Health Status</th>
-                            <th>Background</th>
-                            <th>Special Needs</th>
-                            <th>Shelter</th>
-                            <th>Image</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {adoptableAnimals.map((animal) => (
-                            <tr key={animal.id}>
-                                <td>{animal.id}</td>
-                                <td>{animal.name}</td>
-                                <td>{animal.type}</td>
-                                <td>{animal.breed}</td>
-                                <td>{animal.age}</td>
-                                <td>{animal.size}</td>
-                                <td>{animal.personality}</td>
-                                <td>{animal.health_status}</td>
-                                <td>{animal.background}</td>
-                                <td>{animal.special_needs}</td>
-                                <td>{animal.shelter}</td>
-                                <td>
-                                    <img
-                                        src={animal.imgurl}
-                                        alt={animal.name}
-                                        style={{ width: '100px', height: 'auto' }}
-                                    />
-                                </td>
-                                <td>
-                                    <button onClick={() => handleEdit(animal)}>
-                                        <FaEdit />
-                                    </button>
-                                    <button onClick={() => handleDelete(animal.id)}>
-                                        <FaTrash />
-                                    </button>
-                                </td>
+                <>
+                    <table className="adoptable-animals-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Breed</th>
+                                <th>Age</th>
+                                <th>Size</th>
+                                <th>Personality</th>
+                                <th>Health Status</th>
+                                <th>Background</th>
+                                <th>Special Needs</th>
+                                <th>Shelter</th>
+                                <th>Image</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {displayedAnimals.map((animal) => (
+                                <tr key={animal.id}>
+                                    <td>{animal.id}</td>
+                                    <td>{animal.name}</td>
+                                    <td>{animal.type}</td>
+                                    <td>{animal.breed}</td>
+                                    <td>{animal.age}</td>
+                                    <td>{animal.size}</td>
+                                    <td>{animal.personality}</td>
+                                    <td>{animal.health_status}</td>
+                                    <td>{animal.background}</td>
+                                    <td>{animal.special_needs}</td>
+                                    <td>{animal.shelter}</td>
+                                    <td>
+                                        <img
+                                            src={animal.imgurl}
+                                            alt={animal.name}
+                                            style={{ width: '100px', height: 'auto' }}
+                                        />
+                                    </td>
+                                    <td>
+                                        <button onClick={() => handleEdit(animal)}>
+                                            <FaEdit />
+                                        </button>
+                                        <button onClick={() => handleDelete(animal.id)}>
+                                            <FaTrash />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div className="pagination">
+                        <button onClick={handlePrevPage} disabled={currentPage === 1}>
+                            <FaChevronLeft />
+                        </button>
+                        <span>Page {currentPage} of {totalPages}</span>
+                        <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                            <FaChevronRight />
+                        </button>
+                    </div>
+                </>
             )}
-            </div>
+        </div>
     );
 };
 

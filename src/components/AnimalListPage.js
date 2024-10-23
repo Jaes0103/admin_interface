@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaw, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faPaw, faChevronLeft, faChevronRight, faPlus, faEdit } from '@fortawesome/free-solid-svg-icons';
 import '../style/AnimalListPage.css';
 import Sidebar from './Sidebar';
+import AddAnimalModal from '../components/AddAnimalModal';
+import UpdateAnimalModal from '../components/UpdateAnimalModal'; 
 
 const AnimalList = () => {
     const [animals, setAnimals] = useState([]);
@@ -13,50 +15,97 @@ const AnimalList = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [entriesPerPage, setEntriesPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [updateModalOpen, setUpdateModalOpen] = useState(false);
+    const [selectedAnimal, setSelectedAnimal] = useState(null);
+    const [sortOrder, setSortOrder] = useState('name'); // Default sorting
     const navigate = useNavigate();
 
+    // Fetch animals from the API
     const fetchAnimals = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/admin/animals`);
             setAnimals(response.data.animals);
-            setLoading(false);
         } catch (err) {
+            console.error('Error fetching animals:', err.response ? err.response.data : err.message);
             setError('Error fetching animals');
+        } finally {
             setLoading(false);
         }
     };
+    
 
     useEffect(() => {
         fetchAnimals();
     }, []);
 
+    // Navigate to animal details page
     const handleViewClick = (id) => {
         navigate(`/animals/${id}/details`);
     };
 
+    // Handle search input change
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value.toLowerCase());
         setCurrentPage(1);
     };
 
+    // Handle entries per page change
     const handleEntriesChange = (e) => {
         setEntriesPerPage(parseInt(e.target.value));
         setCurrentPage(1);
     };
 
-    const filteredAnimals = animals.filter(animal => 
-        animal.name.toLowerCase().includes(searchQuery) ||
-        animal.type.toLowerCase().includes(searchQuery) ||
-        animal.breed.toLowerCase().includes(searchQuery)
+    // Handle adding a new animal
+    const handleAddAnimal = async (newAnimal) => {
+        try {
+            await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/animals`, newAnimal);
+            fetchAnimals(); // Refresh the list after adding
+        } catch (err) {
+            setError('Error adding animal');
+        }
+    };
+
+    // Handle updating an animal
+    const handleUpdateAnimal = async (id, updatedAnimal) => {
+        try {
+            const response = await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${id}`, updatedAnimal);
+            fetchAnimals(); // Refresh the list after updating
+            setUpdateModalOpen(false);
+        } catch (err) {
+            console.error('Error updating animal:', err.response ? err.response.data : err.message);
+            setError('Error updating animal');
+        }
+    };
+    
+
+    // Handle clicking the edit button
+    const handleEditClick = (animal) => {
+        setSelectedAnimal(animal);
+        setUpdateModalOpen(true);
+    };
+
+    // Filter animals based on search query
+    const filteredAnimals = animals.filter(animal =>
+        (animal.name && animal.name.toLowerCase().includes(searchQuery)) ||
+        (animal.type && animal.type.toLowerCase().includes(searchQuery)) ||
+        (animal.breed && animal.breed.toLowerCase().includes(searchQuery))
     );
+
+    // Sort animals based on selected order
+    const sortedAnimals = [...filteredAnimals].sort((a, b) => {
+        if (sortOrder === 'name') {
+            return a.name.localeCompare(b.name);
+        } else if (sortOrder === 'age') {
+            return a.age - b.age;
+        }
+        return 0; // Default case
+    });
 
     const indexOfLastAnimal = currentPage * entriesPerPage;
     const indexOfFirstAnimal = indexOfLastAnimal - entriesPerPage;
-    const currentAnimals = filteredAnimals.slice(indexOfFirstAnimal, indexOfLastAnimal);
-
-    const totalPages = Math.ceil(filteredAnimals.length / entriesPerPage);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const currentAnimals = sortedAnimals.slice(indexOfFirstAnimal, indexOfLastAnimal);
+    const totalPages = Math.ceil(sortedAnimals.length / entriesPerPage);
 
     const handleNext = () => {
         if (currentPage < totalPages) {
@@ -79,10 +128,19 @@ const AnimalList = () => {
     }
 
     return (
-        <div className="animal-list-page">
+        <div className="table-container"> 
             <h1>Animals in the Shelter</h1>
             <Sidebar />
-            <div className="table-container"> 
+            <button className="add-animal-button" onClick={() => setModalOpen(true)}>
+                <FontAwesomeIcon icon={faPlus} /> Add Animal
+            </button>
+            <AddAnimalModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onAddAnimal={handleAddAnimal} />
+            <UpdateAnimalModal 
+                isOpen={updateModalOpen} 
+                onClose={() => setUpdateModalOpen(false)} 
+                onUpdateAnimal={handleUpdateAnimal} 
+                animal={selectedAnimal} 
+            />
             <div className="controls">
                 <label htmlFor="entries">Show</label>
                 <select id="entries" value={entriesPerPage} onChange={handleEntriesChange}>
@@ -99,89 +157,77 @@ const AnimalList = () => {
                     onChange={handleSearchChange}
                     className="search-input"
                 />
+                <label htmlFor="sort">Sort by:</label>
+                <select id="sort" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                    <option value="name">Name</option>
+                    <option value="age">Age</option>
+                </select>
             </div>
     
-                {filteredAnimals.length === 0 ? (
-                    <p>No animals found in the shelter.</p>
-                ) : (
-                    <>
-                        <table className="animal-table">
-                            <thead>
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Age</th>
-                                    <th>Breed</th>
-                                    <th>Birthdate</th>
-                                    <th>Location</th>
-                                    <th>Personality</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+            {filteredAnimals.length === 0 ? (
+                <p>No animals found in the shelter.</p>
+            ) : (
+                <>
+                    <table className="animal-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Age</th>
+                                <th>Breed</th>
+                                <th>Gender</th>
+                                <th>Location</th>
+                                <th>Personality</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentAnimals.map(animal => (
+                                <tr key={animal.id}>
+                                    <td>
+                                        {animal.imgurl ? (
+                                            <img 
+                                                src={animal.imgurl} 
+                                                alt={animal.name} 
+                                                className="animal-image" 
+                                            />
+                                        ) : (
+                                            <div className="paw-icon-container">
+                                                <FontAwesomeIcon icon={faPaw} className="default-paw-icon" />
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td>{animal.name}</td>
+                                    <td>{animal.type}</td>
+                                    <td>{animal.age}</td>
+                                    <td>{animal.breed}</td>
+                                    <td>{animal.gender}</td>
+                                    <td>{animal.location}</td>
+                                    <td>{animal.personality}</td>
+                                    <td>{animal.status}</td>
+                                    <td>
+                                        <button onClick={() => handleEditClick(animal)}>
+                                            <FontAwesomeIcon icon={faEdit} /> 
+                                        </button>
+                                        <button onClick={() => handleViewClick(animal.id)}>View Details</button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {currentAnimals.map(animal => (
-                                    <tr key={animal.id}>
-                                        <td>
-                                            {animal.image_url ? (
-                                                <img 
-                                                    src={animal.image_url} 
-                                                    alt={animal.name} 
-                                                    className="animal-image" 
-                                                />
-                                            ) : (
-                                                <div className="paw-icon-container">
-                                                    <FontAwesomeIcon icon={faPaw} className="default-paw-icon" />
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td>{animal.name}</td>
-                                        <td>{animal.type}</td>
-                                        <td>{animal.age}</td>
-                                        <td>{animal.breed}</td>
-                                        <td>{new Date(animal.birthdate).toLocaleDateString()}</td>
-                                        <td>{animal.location}</td>
-                                        <td>{animal.personality}</td>
-                                        <td>{animal.status}</td>
-                                        <td>
-                                            <button onClick={() => handleViewClick(animal.id)}>View Details</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {/* Pagination Controls */}
-                        <div className="pagination-container">
-                            <div className="pagination">
-                                <button 
-                                    onClick={handlePrevious} 
-                                    disabled={currentPage === 1}
-                                    className="prev-next-button"
-                                >
-                                    <FontAwesomeIcon icon={faChevronLeft} />
-                                </button>
-                                {Array.from({ length: totalPages }, (_, index) => (
-                                    <button 
-                                        key={index + 1} 
-                                        onClick={() => paginate(index + 1)} 
-                                        className={`page-button ${currentPage === index + 1 ? 'active' : ''}`}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                ))}
-                                <button 
-                                    onClick={handleNext} 
-                                    disabled={currentPage === totalPages}
-                                    className="prev-next-button"
-                                >
-                                    <FontAwesomeIcon icon={faChevronRight} />
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div className="pagination">
+                        <button onClick={handlePrevious} disabled={currentPage === 1}>
+                            <FontAwesomeIcon icon={faChevronLeft} />
+                        </button>
+                        <span>{currentPage} of {totalPages}</span>
+                        <button onClick={handleNext} disabled={currentPage === totalPages}>
+                            <FontAwesomeIcon icon={faChevronRight} />
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

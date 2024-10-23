@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaSort } from 'react-icons/fa'; 
+import { FaSort, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; 
 import '../style/ReportsPage.css';
 import Sidebar from './Sidebar';
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
-  const [rescuedAnimals, setRescuedAnimals] = useState([]); // State for rescued animals
+  const [rescuedAnimals, setRescuedAnimals] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isRecent, setIsRecent] = useState(true);
+
+  // Pagination state
+  const [currentPageReports, setCurrentPageReports] = useState(1);
+  const [itemsPerPageReports, setItemsPerPageReports] = useState(10);
+
+  const [currentPageRescued, setCurrentPageRescued] = useState(1);
+  const [itemsPerPageRescued, setItemsPerPageRescued] = useState(10);
 
   // Fetch report details
   const fetchReportDetails = async () => {
@@ -20,7 +27,7 @@ const ReportsPage = () => {
 
       const rescuedUrl = `${process.env.REACT_APP_BASE_URL}/api/admin/rescuedanimalsdetails`;
       const rescuedResponse = await axios.get(rescuedUrl);
-      setRescuedAnimals(rescuedResponse.data); // Adjusted to match response structure
+      setRescuedAnimals(rescuedResponse.data);
     } catch (err) {
       console.error('Fetch error:', err);
       setError('Error fetching report or rescued animal details');
@@ -33,17 +40,53 @@ const ReportsPage = () => {
     fetchReportDetails();
   }, []);
 
-  // Toggle report order (sort by recent or oldest)
   const toggleReportOrder = () => {
     setIsRecent(!isRecent);
   };
 
-  // Sort reports by creation date
   const sortedReports = reports.sort((a, b) => {
     const dateA = new Date(a.created_at);
     const dateB = new Date(b.created_at);
     return isRecent ? dateB - dateA : dateA - dateB;
   });
+
+  // Pagination calculations
+  const totalPagesReports = Math.ceil(reports.length / itemsPerPageReports);
+  const totalPagesRescued = Math.ceil(rescuedAnimals.length / itemsPerPageRescued);
+
+  const currentReports = sortedReports.slice(
+    (currentPageReports - 1) * itemsPerPageReports,
+    currentPageReports * itemsPerPageReports
+  );
+
+  const currentRescuedAnimals = rescuedAnimals.slice(
+    (currentPageRescued - 1) * itemsPerPageRescued,
+    currentPageRescued * itemsPerPageRescued
+  );
+
+  const handleNextReports = () => {
+    if (currentPageReports < totalPagesReports) {
+      setCurrentPageReports((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousReports = () => {
+    if (currentPageReports > 1) {
+      setCurrentPageReports((prev) => prev - 1);
+    }
+  };
+
+  const handleNextRescued = () => {
+    if (currentPageRescued < totalPagesRescued) {
+      setCurrentPageRescued((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousRescued = () => {
+    if (currentPageRescued > 1) {
+      setCurrentPageRescued((prev) => prev - 1);
+    }
+  };
 
   if (loading) {
     return <p>Loading reports and rescued animals...</p>;
@@ -77,12 +120,12 @@ const ReportsPage = () => {
           </tr>
         </thead>
         <tbody>
-          {sortedReports.length === 0 ? (
+          {currentReports.length === 0 ? (
             <tr>
               <td colSpan="9">No reports available.</td>
             </tr>
           ) : (
-            sortedReports.map((report) => (
+            currentReports.map((report) => (
               <tr key={report.id}>
                 <td>{report.id}</td>
                 <td>{report.reporter_name}</td>
@@ -103,6 +146,19 @@ const ReportsPage = () => {
         </tbody>
       </table>
 
+      {/* Reports Pagination */}
+      <div className="pagination">
+        <button onClick={handlePreviousReports} disabled={currentPageReports === 1}>
+          <FaChevronLeft />
+        </button>
+        <span>
+          Page {currentPageReports} of {totalPagesReports}
+        </span>
+        <button onClick={handleNextReports} disabled={currentPageReports === totalPagesReports}>
+          <FaChevronRight />
+        </button>
+      </div>
+
       <h1>Rescued Animals</h1>
       <table className="rescued-animals-table">
         <thead>
@@ -119,12 +175,12 @@ const ReportsPage = () => {
           </tr>
         </thead>
         <tbody>
-          {rescuedAnimals.length === 0 ? (
+          {currentRescuedAnimals.length === 0 ? (
             <tr>
-              <td colSpan="7">No rescued animals available.</td>
+              <td colSpan="9">No rescued animals available.</td>
             </tr>
           ) : (
-            rescuedAnimals.map((rescued) => (
+            currentRescuedAnimals.map((rescued) => (
               <tr key={rescued.id}>
                 <td>
                   {rescued.image_url && (
@@ -144,6 +200,19 @@ const ReportsPage = () => {
           )}
         </tbody>
       </table>
+
+      {/* Rescued Animals Pagination */}
+      <div className="pagination">
+        <button onClick={handlePreviousRescued} disabled={currentPageRescued === 1}>
+          <FaChevronLeft />
+        </button>
+        <span>
+          Page {currentPageRescued} of {totalPagesRescued}
+        </span>
+        <button onClick={handleNextRescued} disabled={currentPageRescued === totalPagesRescued}>
+          <FaChevronRight />
+        </button>
+      </div>
     </div>
   );
 };
