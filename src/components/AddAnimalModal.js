@@ -10,6 +10,7 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
     const [status, setStatus] = useState('');
     const [imgFile, setImgFile] = useState(null); // State for image file
     const [gender, setGender] = useState('');
+    const [background, setBackground] = useState(''); // State for background text field
 
     const handleImageChange = (e) => {
         setImgFile(e.target.files[0]); // Update state with selected file
@@ -26,7 +27,8 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
             location, 
             personality, 
             status, 
-            gender 
+            gender,
+            background // Include the background field in the object
         };
 
         // If an image file is selected, add it to the newAnimal object
@@ -44,6 +46,7 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
         setPersonality('');
         setStatus('');
         setGender('');
+        setBackground(''); // Reset background field
         setImgFile(null); // Reset image file
     };
 
@@ -103,11 +106,18 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
                         placeholder="Status"
                         required
                     />
+                    <input
+                        type="text"
+                        value={background} // Add input for background
+                        onChange={(e) => setBackground(e.target.value)}
+                        placeholder="Background"
+                        required
+                    />
                     {/* Image input for picking the image */}
                     <input
                         type="file"
-                        onChange={handleImageChange} // Handle file selection
-                        accept="image/*" // Accept only image files
+                        onChange={handleImageChange} 
+                        accept="image/*" 
                         required
                     />
                     <input
@@ -126,3 +136,4 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
 };
 
 export default AddAnimalModal;
+    

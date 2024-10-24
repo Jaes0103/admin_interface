@@ -10,6 +10,7 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
     const [status, setStatus] = useState('');
     const [imgFile, setImgFile] = useState(null); // State for image file
     const [gender, setGender] = useState('');
+    const [imgPreview, setImgPreview] = useState(''); // State for image preview
 
     useEffect(() => {
         if (animal) {
@@ -20,13 +21,25 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
             setLocation(animal.location);
             setPersonality(animal.personality);
             setStatus(animal.status);
-            setImgFile(null); // Resetting the image file
             setGender(animal.gender || ''); // Set gender from animal data
+
+            // Resetting the image file and preview when the animal changes
+            setImgFile(null);
+            setImgPreview(animal.imgurl || ''); // Set preview to existing image URL if available
         }
     }, [animal]);
 
     const handleImageChange = (e) => {
-        setImgFile(e.target.files[0]); // Update state with selected file
+        const file = e.target.files[0];
+        setImgFile(file); // Update state with selected file
+
+        // Generate image preview URL
+        if (file) {
+            const previewUrl = URL.createObjectURL(file);
+            setImgPreview(previewUrl);
+        } else {
+            setImgPreview(''); // Clear preview if no file is selected
+        }
     };
 
     const handleSubmit = (e) => {
@@ -102,8 +115,14 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
                         type="file"
                         onChange={handleImageChange} // Handle file selection
                         accept="image/*" // Accept only image files
-                        required
                     />
+                    {/* Show image preview if available */}
+                    {imgPreview && (
+                        <div className="image-preview">
+                            <h3>Image Preview:</h3>
+                            <img src={imgPreview} alt="Image Preview" style={{ width: '100%', height: 'auto' }} />
+                        </div>
+                    )}
                     <input
                         type="text"
                         value={gender}

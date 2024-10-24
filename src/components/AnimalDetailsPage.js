@@ -17,7 +17,7 @@ const AnimalDetails = () => {
   const [observations, setObservations] = useState([]);
   const [observationDialogVisible, setObservationDialogVisible] = useState(false);
   const [selectedObservation, setSelectedObservation] = useState(null);
-
+  const [observationToDelete, setObservationToDelete] = useState(null); 
   const [medicalUpdate, setMedicalUpdate] = useState({
     checkupDate: format(new Date(), 'yyyy-MM-dd'),
     healthStatus: '',
@@ -30,21 +30,21 @@ const AnimalDetails = () => {
   const [showMedicationDialog, setShowMedicationDialog] = useState(false);
   const [selectedMedication, setSelectedMedication] = useState(null);
   const [selectedHealthRecordId, setSelectedHealthRecordId] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [medicationToDelete, setMedicationToDelete] = useState(null);
 
-
-  // Fetch the animal details and health records from the API
   const fetchAnimalDetails = useCallback(async () => {
     setLoading(true);
     try {
         const response = await axios.get(
             `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}`
         );
-        console.log("Fetched animal details:", response.data); // Log the response data
+        console.log("Fetched animal details:", response.data); 
         setAnimal(response.data.animal || {});
         setHealthRecords(response.data.healthRecords || []);
         setError(null);
     } catch (err) {
-        console.error(err); // Log the error
+        console.error(err); 
         setError({
             message: 'Error fetching animal details',
             details: err.response ? err.response.data : err.message,
@@ -71,18 +71,19 @@ const fetchMedications = useCallback(async () => {
     }
 }, [animalId, healthRecords]);
 
-const fetchObservations = useCallback(async (recordId) => {
-  console.log('Fetching observations for Record ID:', recordId);
-  if (!recordId) return;
+const fetchObservations = useCallback(async (animalId) => {
+  console.log('Fetching observations for Animal ID:', animalId);
+  if (!animalId) return;
   try {
-    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/health-records/${recordId}/observations`);
+    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/observations`);
     console.log("Fetched observations:", response.data);
     setObservations(response.data || []);
   } catch (err) {
     console.error("Error fetching observations:", err);
     setError({ message: 'Error fetching observations', details: err.response ? err.response.data : err.message });
   }
-}, [animalId]);
+}, 
+ [animalId]);
 useEffect(() => {
   if (animalId) {
     fetchAnimalDetails();
@@ -118,33 +119,43 @@ const handleMedicationChange = (event) => {
   }));
 };
 
+// Function to handle editing an observation
 const handleEditObservation = (observation) => {
   console.log("Editing Observation:", observation);
-  setSelectedObservation(observation);
-  setSelectedHealthRecordId(observation.health_record_id);
-  setObservationDialogVisible(true);
+  setSelectedObservation(observation); 
+  setObservationDialogVisible(true); 
 };
 
+// Function to submit observation (both create and update)
 const submitObservationUpdate = async () => {
   if (!selectedObservation) return;
   try {
     if (selectedObservation.id) {
-      await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/health-records/${selectedHealthRecordId}/observations/${selectedObservation.id}`, {
+      // Update existing observation
+      await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/observations/${selectedObservation.id}`, {
         note: selectedObservation.note,
         observation_date: selectedObservation.observation_date,
       });
     } else {
-      await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/health-records/${selectedHealthRecordId}/observations`, {
+      // Create new observation
+      await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/observations`, {
         note: selectedObservation.note,
         observation_date: selectedObservation.observation_date,
       });
     }
-    await fetchObservations(selectedHealthRecordId);
-    setObservationDialogVisible(false);
+    // Fetch updated observations
+    await fetchObservations(animalId); 
+    setObservationDialogVisible(false); 
   } catch (err) {
-    setError({ message: 'Error updating observation', details: err.response ? err.response.data : err.message });
+    
+    console.error('Error details:', err); 
+    setError({ 
+      message: 'Error updating observation', 
+      details: err.response ? err.response.data : err.message 
+    });
   }
 };
+
 
 useEffect(() => {
   if (animalId) {
@@ -164,7 +175,6 @@ useEffect(() => {
       [e.target.name]: e.target.value,
     });
   };
-
   const submitHealthRecordUpdate = async (recordId) => {
     try {
       if (recordId) {
@@ -188,8 +198,8 @@ useEffect(() => {
           }
         );
       }
-      await fetchAnimalDetails();
-      setShowHealthRecordDialog(false);
+      await fetchAnimalDetails(); 
+      setShowHealthRecordDialog(false); 
     } catch (err) {
       setError({
         message: 'Error updating health record',
@@ -197,52 +207,71 @@ useEffect(() => {
       });
     }
   };
-
   const submitMedicationUpdate = async () => {
-    if (!selectedMedication) return;
+    if (!selectedMedication || !animalId || !selectedHealthRecordId) return;
 
     try {
-      await axios.put(
-        `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/medications/${selectedMedication.id}`,
-        {
-          medication_name: selectedMedication.medication_name,
-          dosage: selectedMedication.dosage,
-          frequency: selectedMedication.frequency,
-          status: selectedMedication.status,
-          start_date: selectedMedication.start_date,
-          end_date: selectedMedication.end_date,
+        if (selectedMedication.id) {
+            await axios.put(
+                `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/medications/${selectedMedication.id}`,
+                {
+                    medication_name: selectedMedication.medication_name,
+                    dosage: selectedMedication.dosage,
+                    frequency: selectedMedication.frequency,
+                    status: selectedMedication.status,
+                    start_date: selectedMedication.start_date,
+                    end_date: selectedMedication.end_date,
+                }
+            );
+        } else {
+            await axios.post(
+                `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/medications`,
+                {
+                    medication_name: selectedMedication.medication_name,
+                    dosage: selectedMedication.dosage,
+                    frequency: selectedMedication.frequency,
+                    status: selectedMedication.status,
+                    start_date: selectedMedication.start_date,
+                    end_date: selectedMedication.end_date,
+                }
+            );
         }
-      );
-      await fetchAnimalDetails();
-      setShowMedicationDialog(false);
+        await fetchAnimalDetails(); 
+        setShowMedicationDialog(false); 
     } catch (err) {
-      setError({
-        message: 'Error updating medications',
-        details: err.response ? err.response.data : err.message,
-      });
+        setError({
+            message: 'Error updating medications',
+            details: err.response ? err.response.data : err.message,
+        });
     }
-  };
+};
 
-  const handleDeleteObservation = async (observationId) => {
-    try {
-      await axios.delete(
-        `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/health-records/${selectedHealthRecordId}/observations/${observationId}`
-      );
-      await fetchAnimalDetails();
-    } catch (err) {
-      setError({
-        message: 'Error deleting observation',
-        details: err.response ? err.response.data : err.message,
-      });
-    }
-  };
+const handleDeleteObservationClick = (observationId) => {
+  setObservationToDelete(observationId); 
+  setShowDeleteConfirmation(true);      
+};
 
+const confirmDeleteObservation = async () => {
+  try {
+    await axios.delete(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/observations/${observationToDelete}`);
+    await fetchAnimalDetails(); 
+    setShowDeleteConfirmation(false); 
+    setObservationToDelete(null); 
+  } catch (err) {
+    setError({
+      message: 'Error deleting observation',
+      details: err.response ? err.response.data : err.message,
+    });
+  }
+};
   const handleDeleteHealthRecord = async (recordId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this health record? This action cannot be undone.');
+    if (!confirmDelete) {
+      return; 
+    }
     try {
-      await axios.delete(
-        `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/health-records/${recordId}`
-      );
-      await fetchAnimalDetails();
+      await axios.delete(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/health-records/${recordId}`);
+      await fetchAnimalDetails();  
     } catch (err) {
       setError({
         message: 'Error deleting health record',
@@ -250,27 +279,35 @@ useEffect(() => {
       });
     }
   };
+  
+  const handleDeleteMedication = (medicationId) => {
+    setMedicationToDelete(medicationId); // Set the medication ID to be deleted
+    setShowDeleteConfirmation(true); // Show the confirmation modal
+  };
 
-  const handleDeleteMedication = async (medicationId) => {
-    try {
-      await axios.delete(
-        `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/medications/${medicationId}`
-      );
-      await fetchAnimalDetails();
-    } catch (err) {
-      setError({
-        message: 'Error deleting medication',
-        details: err.response ? err.response.data : err.message,
-      });
+  // Function to confirm deletion
+  const confirmDeleteMedication = async () => {
+    if (medicationToDelete) {
+      try {
+        await axios.delete(
+          `${process.env.REACT_APP_BASE_URL}/api/admin/animals/${animalId}/medications/${medicationToDelete}`
+        );
+        await fetchMedications(); // Refresh the medication list after deletion
+      } catch (err) {
+        setError({
+          message: 'Error deleting medication',
+          details: err.response ? err.response.data : err.message,
+        });
+      } finally {
+        setShowDeleteConfirmation(false); // Hide the confirmation modal
+        setMedicationToDelete(null); // Clear the medication ID
+      }
     }
   };
-  
   const handleHealthRecordSubmit = async (e) => {
     e.preventDefault();
     await submitHealthRecordUpdate(selectedHealthRecordId);
   };
-
-  
   const handleMedicationSubmit = async (e) => {
     e.preventDefault(); 
     await submitMedicationUpdate();
@@ -280,19 +317,19 @@ useEffect(() => {
     return <div>Loading animal details...</div>;
   }
 
-if (error) {
-    return (
-      <div>
-        <div>{error.message}</div>
-        {error.details && (
-          <div className="error-details">
-            {typeof error.details === 'string' ? error.details : JSON.stringify(error.details)}
+    if (error) {
+        return (
+          <div>
+            <div>{error.message}</div>
+            {error.details && (
+              <div className="error-details">
+                {typeof error.details === 'string' ? error.details : JSON.stringify(error.details)}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    );
-  }
-  
+        );
+      }
+      
   return (
     <div className="animal-details-page">
       <button onClick={() => navigate('/animals')}>Back to Animal List</button>
@@ -358,34 +395,35 @@ if (error) {
         </tr>
       </thead>
       <tbody>
-        {healthRecords.map((record) => (
-          <tr key={record.id}>
-            <td>{format(new Date(record.checkup_date), 'MM/dd/yyyy')}</td>
-            <td>{record.health_status}</td>
-            <td>{record.lab_results}</td>
-            <td>{format(new Date(record.next_checkup_date), 'MM/dd/yyyy')}</td>
-            <td>
-              <button
-                onClick={() => {
-                  setSelectedHealthRecordId(record.id);
-                  setShowHealthRecordDialog(true);
-                  setMedicalUpdate({
-                    checkupDate: format(new Date(record.checkup_date), 'yyyy-MM-dd'),
-                    healthStatus: record.health_status,
-                    labResults: record.lab_results,
-                    nextCheckupDate: format(new Date(record.next_checkup_date), 'yyyy-MM-dd'),
-                  });
-                }}
-              >
-                <i className="fa fa-pencil"></i>
-              </button>
-              <button onClick={() => handleDeleteHealthRecord(record.id)}>
-                <i className="fa fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
+  {healthRecords.map((record) => (
+    <tr key={record.id}>
+      <td>{format(new Date(record.checkup_date), 'MM/dd/yyyy')}</td>
+      <td>{record.health_status}</td>
+      <td>{record.lab_results}</td>
+      <td>{format(new Date(record.next_checkup_date), 'MM/dd/yyyy')}</td>
+      <td>
+        <button
+          onClick={() => {
+            setSelectedHealthRecordId(record.id); 
+            setShowHealthRecordDialog(true);
+            setMedicalUpdate({
+              checkupDate: format(new Date(record.checkup_date), 'yyyy-MM-dd'),
+              healthStatus: record.health_status,
+              labResults: record.lab_results,
+              nextCheckupDate: format(new Date(record.next_checkup_date), 'yyyy-MM-dd'),
+            });
+          }}
+        >
+          <i className="fa fa-pencil"></i> 
+        </button>
+        <button onClick={() => handleDeleteHealthRecord(record.id)}>
+          <i className="fa fa-trash"></i> 
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
     </table>
   )}
   
@@ -405,273 +443,364 @@ if (error) {
   </button>
 
   {/* Health Record Dialog Box */}
-  {showHealthRecordDialog && (
-    <div className="dialog-overlay">
-      <div className="dialog-box">
-        <h4>Add Health Record</h4>
-        <form onSubmit={(e) => { e.preventDefault(); submitHealthRecordUpdate(); }}>
-          <div>
-            <label>Checkup Date</label>
-            <input
-              type="date"
-              name="checkupDate"
-              value={medicalUpdate.checkupDate}
-              onChange={handleMedicalUpdateChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Health Status</label>
-            <input
-              type="text"
-              name="healthStatus"
-              value={medicalUpdate.healthStatus}
-              onChange={handleMedicalUpdateChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Lab Results</label>
-            <input
-              type="text"
-              name="labResults"
-              value={medicalUpdate.labResults}
-              onChange={handleMedicalUpdateChange}
-            />
-          </div>
-          <div>
-            <label>Next Checkup Date</label>
-            <input
-              type="date"
-              name="nextCheckupDate"
-              value={medicalUpdate.nextCheckupDate}
-              onChange={handleMedicalUpdateChange}
-            />
-          </div>
-          <button type="submit">Save</button>
-          <button type="button" onClick={() => setShowHealthRecordDialog(false)}>
-            Cancel
-          </button>
-        </form>
+    {showHealthRecordDialog && (
+      <div className="dialog-overlay">
+        <div className="dialog-box">
+          <h4>{selectedHealthRecordId ? 'Edit Health Record' : 'Add Health Record'}</h4> {/* Display correct title */}
+          <form onSubmit={handleHealthRecordSubmit}>
+            <div>
+              <label>Checkup Date</label>
+              <input
+                type="date"
+                name="checkupDate"
+                value={medicalUpdate.checkupDate}
+                onChange={handleMedicalUpdateChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Health Status</label>
+              <input
+                type="text"
+                name="healthStatus"
+                value={medicalUpdate.healthStatus}
+                onChange={handleMedicalUpdateChange}
+                required
+              />
+            </div>
+            <div>
+              <label>Lab Results</label>
+              <input
+                type="text"
+                name="labResults"
+                value={medicalUpdate.labResults}
+                onChange={handleMedicalUpdateChange}
+              />
+            </div>
+            <div>
+              <label>Next Checkup Date</label>
+              <input
+                type="date"
+                name="nextCheckupDate"
+                value={medicalUpdate.nextCheckupDate}
+                onChange={handleMedicalUpdateChange}
+              />
+            </div>
+            <button type="submit">Save</button>
+            <button type="button" onClick={() => setShowHealthRecordDialog(false)}>
+              Cancel
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
-  )}
+    )}
+         {/* Medications Section */}
+      <h3>Medications</h3>
+      {medications.length === 0 ? (
+        <p>No medications available.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Medication Name</th>
+              <th>Dosage</th>
+              <th>Frequency</th>
+              <th>Status</th>
+              <th>Date Started</th>
+              <th>Date Ended</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {medications.map((medication) => (
+              <tr key={medication.id}>
+                <td>{medication.medication_name}</td>
+                <td>{medication.dosage}</td>
+                <td>{medication.frequency}</td>
+                <td>{medication.status}</td>
+                <td>{format(new Date(medication.start_date), 'MM/dd/yyyy')}</td>
+                <td>{medication.end_date ? format(new Date(medication.end_date), 'MM/dd/yyyy') : 'N/A'}</td>
+                <td>
+                  <button
+                    onClick={() => {
+                      setSelectedMedication(medication);
+                      setShowMedicationDialog(true);
+                    }}
+                  >
+                    <i className="fa fa-pencil"></i>
+                  </button>
+                  <button onClick={() => handleDeleteMedication(medication.id)}>
+                    <i className="fa fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
-  {/* Medications Section */}
-  <h3>Medications</h3>
-  {medications.length === 0 ? (
-    <p>No medications available.</p>
-  ) : (
-    <table>
-      <thead>
-        <tr>
-          <th>Medication Name</th>
-          <th>Dosage</th>
-          <th>Frequency</th>
-          <th>Status</th>
-          <th>Date Started</th>
-          <th>Date Ended</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {medications.map((medication) => (
-          <tr key={medication.id}>
-            <td>{medication.medication_name}</td>
-            <td>{medication.dosage}</td>
-            <td>{medication.frequency}</td>
-            <td>{medication.status}</td>
-            <td>{format(new Date(medication.start_date), 'MM/dd/yyyy')}</td>
-            <td>{format(new Date(medication.end_date), 'MM/dd/yyyy')}</td>
-            <td>
-              <button
-                onClick={() => {
-                  setSelectedMedication(medication);
-                  setShowMedicationDialog(true);
-                }}
-              >
-                <i className="fa fa-pencil"></i>
-              </button>
-              <button onClick={() => handleDeleteMedication(medication.id)}>
-                <i className="fa fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )}
-  
-  <button
-    onClick={() => {
-      setShowMedicationDialog(true);
-      setSelectedMedication({});
-    }}
-  >
-    Update Medication
-  </button>
+      {/* Button to Add Medication */}
+      <button
+        onClick={() => {
+          setShowMedicationDialog(true);
+          setSelectedMedication({});
+        }}
+      >
+        Add Medication
+      </button>
 
-  {/* Medication Dialog Box */}
-  {showMedicationDialog && (
-    <div className="dialog-overlay">
-      <div className="dialog-box">
-        <h4>Add Medication</h4>
-        <form onSubmit={(e) => { e.preventDefault(); submitMedicationUpdate(); }}>
-          <div>
-            <label>Medication Name</label>
-            <input
-              type="text"
-              name="medication_name"
-              value={selectedMedication.medication_name || ''}
-              onChange={handleMedicationChange}
-              required
-            />
+      {/* Confirmation Modal for Deletion */}
+      {showDeleteConfirmation && (
+        <div className="dialog-overlay">
+          <div className="dialog-box">
+            <h4>Confirm Deletion</h4>
+            <p>Are you sure you want to delete this medication? This action cannot be undone.</p>
+            <button onClick={confirmDeleteMedication}>Yes, Delete</button>
+            <button onClick={() => setShowDeleteConfirmation(false)}>Cancel</button>
           </div>
-          <div>
-            <label>Dosage</label>
-            <input
-              type="text"
-              name="dosage"
-              value={selectedMedication.dosage || ''}
-              onChange={handleMedicationChange}
-              required
-            />
+        </div>
+      )}
+
+      {/* Medication Dialog Box */}
+      {showMedicationDialog && (
+        <div className="dialog-overlay">
+          <div className="dialog-box">
+            <h4>Add Medication</h4>
+            <form onSubmit={(e) => { e.preventDefault(); submitMedicationUpdate(); }}>
+              <div>
+                <label>Medication Name</label>
+                <input
+                  type="text"
+                  name="medication_name"
+                  value={selectedMedication.medication_name || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Dosage</label>
+                <input
+                  type="text"
+                  name="dosage"
+                  value={selectedMedication.dosage || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Frequency</label>
+                <input
+                  type="text"
+                  name="frequency"
+                  value={selectedMedication.frequency || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Status</label>
+                <input
+                  type="text"
+                  name="status"
+                  value={selectedMedication.status || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  name="start_date"
+                  value={selectedMedication.start_date || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>End Date</label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={selectedMedication.end_date || ''}
+                  onChange={handleMedicationChange}
+                />
+              </div>
+              <button type="submit">Save</button>
+              <button type="button" onClick={() => setShowMedicationDialog(false)}>
+                Cancel
+              </button>
+            </form>
           </div>
-          <div>
-            <label>Frequency</label>
-            <input
-              type="text"
-              name="frequency"
-              value={selectedMedication.frequency || ''}
-              onChange={handleMedicationChange}
-              required
-            />
+        </div>
+      )}
+      {/* Medication Dialog Box */}
+      {showMedicationDialog && (
+        <div className="dialog-overlay">
+          <div className="dialog-box">
+            <h4>Add Medication</h4>
+            <form onSubmit={(e) => { e.preventDefault(); submitMedicationUpdate(); }}>
+              <div>
+                <label>Medication Name</label>
+                <input
+                  type="text"
+                  name="medication_name"
+                  value={selectedMedication.medication_name || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Dosage</label>
+                <input
+                  type="text"
+                  name="dosage"
+                  value={selectedMedication.dosage || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Frequency</label>
+                <input
+                  type="text"
+                  name="frequency"
+                  value={selectedMedication.frequency || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Status</label>
+                <input
+                  type="text"
+                  name="status"
+                  value={selectedMedication.status || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  name="start_date"
+                  value={selectedMedication.start_date || ''}
+                  onChange={handleMedicationChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>End Date</label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={selectedMedication.end_date || ''}
+                  onChange={handleMedicationChange}
+                />
+              </div>
+              <button type="submit">Save</button>
+              <button type="button" onClick={() => setShowMedicationDialog(false)}>
+                Cancel
+              </button>
+            </form>
           </div>
-          <div>
-            <label>Status</label>
-            <input
-              type="text"
-              name="status"
-              value={selectedMedication.status || ''}
-              onChange={handleMedicationChange}
-              required
-            />
+        </div>
+      )}
+      <h3>Observations</h3>
+        {observations.length === 0 ? (
+          <p>No observations available.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Observation</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {observations.map((observation) => (
+                <tr key={observation.id}>
+                  <td>
+                    {observation.observation_date
+                      ? format(new Date(observation.observation_date), 'MM/dd/yyyy')
+                      : 'No Date Available'}
+                  </td>
+                  <td>{observation.note}</td>
+                  <td>
+                    <button onClick={() => handleEditObservation(observation)}>
+                      <i className="fa fa-pencil"></i>
+                    </button>
+                    <button onClick={() => handleDeleteObservationClick(observation.id)}>
+                      <i className="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {showDeleteConfirmation && (
+                <div className="dialog-overlay">
+                  <div className="dialog-box">
+                    <h4>Confirm Deletion</h4>
+                    <p>Are you sure you want to delete this observation? This action cannot be undone.</p>
+                    <button onClick={confirmDeleteObservation}>Yes, Delete</button>
+                    <button onClick={() => setShowDeleteConfirmation(false)}>Cancel</button>
+                  </div>
+                </div>
+              )}
+            </tbody>
+          </table>
+        )}
+
+            <button
+              onClick={() => {
+                setSelectedObservation({});
+                setObservationDialogVisible(true);
+              }}
+            >
+      Add Observation
+    </button>
+
+       {/* Observation Dialog Box */}
+        {observationDialogVisible && (
+          <div className="dialog-overlay">
+            <div className="dialog-box">
+              <h4>{selectedObservation.id ? 'Edit Observation' : 'Add Observation'}</h4>
+              <form onSubmit={(e) => { e.preventDefault(); submitObservationUpdate(); }}>
+                <div>
+                  <label>Observation</label>
+                  <input
+                    type="text"
+                    name="note"
+                    value={selectedObservation.note || ''}
+                    onChange={handleObservationChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    name="observation_date"
+                    value={
+                      selectedObservation.observation_date
+                        ? format(new Date(selectedObservation.observation_date), 'yyyy-MM-dd')
+                        : ''
+                    }
+                    onChange={handleObservationChange}
+                    required
+                  />
+                </div>
+                <button type="submit">{selectedObservation.id ? 'Update' : 'Save'}</button>
+                <button type="button" onClick={() => setObservationDialogVisible(false)}>
+                  Cancel
+                </button>
+              </form>
+            </div>
           </div>
-          <div>
-            <label>Start Date</label>
-            <input
-              type="date"
-              name="start_date"
-              value={selectedMedication.start_date || ''}
-              onChange={handleMedicationChange}
-              required
-            />
-          </div>
-          <div>
-            <label>End Date</label>
-            <input
-              type="date"
-              name="end_date"
-              value={selectedMedication.end_date || ''}
-              onChange={handleMedicationChange}
-            />
-          </div>
-          <button type="submit">Save</button>
-          <button type="button" onClick={() => setShowMedicationDialog(false)}>
-            Cancel
-          </button>
-        </form>
+        )}
       </div>
-    </div>
-  )}
-
-  <h3>Observations</h3>
-  {observations.length === 0 ? (
-    <p>No observations available.</p>
-  ) : (
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Observation</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {observations.map((observation) => (
-          <tr key={observation.id}>
-            <td>
-              {observation.observation_date
-                ? format(new Date(observation.observation_date), 'MM/dd/yyyy')
-                : 'No Date Available'}
-            </td>
-            <td>{observation.note}</td>
-            <td>
-              <button onClick={() => handleEditObservation(observation)}>
-                <i className="fa fa-pencil"></i>
-              </button>
-              <button onClick={() => handleDeleteObservation(observation.id)}>
-                <i className="fa fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )}
-
-  <button
-    onClick={() => {
-      setSelectedObservation({});
-      setObservationDialogVisible(true);
-    }}
-  >
-    Update Observation
-  </button>
-
-  {/* Observation Dialog Box */}
-  {observationDialogVisible && (
-    <div className="dialog-overlay">
-      <div className="dialog-box">
-        <h4>Add Observation</h4>
-        <form onSubmit={(e) => { e.preventDefault(); submitObservationUpdate(); }}>
-          <div>
-            <label>Observation</label>
-            <input
-              type="text"
-              name="note"
-              value={selectedObservation.note || ''}
-              onChange={handleObservationChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Date</label>
-            <input
-              type="date"
-              name="observation_date"
-              value={
-                selectedObservation.observation_date
-                  ? format(new Date(selectedObservation.observation_date), 'yyyy-MM-dd')
-                  : ''
-              }
-              onChange={handleObservationChange}
-              required
-            />
-          </div>
-          <button type="submit">Save</button>
-          <button type="button" onClick={() => setObservationDialogVisible(false)}>
-            Cancel
-          </button>
-        </form>
-      </div>
-    </div>
-  )}
-</div>
-
     </div>
   );
 };
-
-
     export default AnimalDetails;

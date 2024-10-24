@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaw, faChevronLeft, faChevronRight, faPlus, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faPaw, faChevronLeft, faChevronRight, faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import '../style/AnimalListPage.css';
 import Sidebar from './Sidebar';
 import AddAnimalModal from '../components/AddAnimalModal';
-import UpdateAnimalModal from '../components/UpdateAnimalModal'; 
+import UpdateAnimalModal from '../components/UpdateAnimalModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 
 const AnimalList = () => {
     const [animals, setAnimals] = useState([]);
@@ -17,9 +18,12 @@ const AnimalList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [modalOpen, setModalOpen] = useState(false);
     const [updateModalOpen, setUpdateModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false); // State to control delete modal
     const [selectedAnimal, setSelectedAnimal] = useState(null);
-    const [sortOrder, setSortOrder] = useState('name'); // Default sorting
+    const [animalToDelete, setAnimalToDelete] = useState(null);
+    const [sortOrder, setSortOrder] = useState('name');
     const navigate = useNavigate();
+
 
     // Fetch animals from the API
     const fetchAnimals = async () => {
@@ -33,7 +37,6 @@ const AnimalList = () => {
             setLoading(false);
         }
     };
-    
 
     useEffect(() => {
         fetchAnimals();
@@ -58,27 +61,81 @@ const AnimalList = () => {
 
     // Handle adding a new animal
     const handleAddAnimal = async (newAnimal) => {
+        const formData = new FormData();
+        formData.append('name', newAnimal.name);
+        formData.append('type', newAnimal.type);
+        formData.append('age', newAnimal.age);
+        formData.append('breed', newAnimal.breed);
+        formData.append('location', newAnimal.location);
+        formData.append('personality', newAnimal.personality);
+        formData.append('status', newAnimal.status);
+        formData.append('gender', newAnimal.gender);
+        formData.append('background', newAnimal.background);
+
+        if (newAnimal.imgFile) {
+            formData.append('imgFile', newAnimal.imgFile); // Ensure the image is included
+        }
+
         try {
-            await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/animals`, newAnimal);
+            await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/add-animal`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', // Let the browser set this automatically
+                },
+            });
             fetchAnimals(); // Refresh the list after adding
+            setModalOpen(false); // Close the modal after success
         } catch (err) {
             setError('Error adding animal');
+            console.error('Error adding animal:', err.response ? err.response.data : err.message); // Log more details
         }
     };
 
     // Handle updating an animal
     const handleUpdateAnimal = async (id, updatedAnimal) => {
+        const formData = new FormData();
+        formData.append('name', updatedAnimal.name);
+        formData.append('type', updatedAnimal.type);
+        formData.append('age', updatedAnimal.age);
+        formData.append('breed', updatedAnimal.breed);
+        formData.append('location', updatedAnimal.location);
+        formData.append('personality', updatedAnimal.personality);
+        formData.append('status', updatedAnimal.status);
+        formData.append('gender', updatedAnimal.gender);
+
+        if (updatedAnimal.imgFile) {
+            formData.append('imgFile', updatedAnimal.imgFile); // Include the image file if one is selected
+        }
+
         try {
-            const response = await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${id}`, updatedAnimal);
-            fetchAnimals(); // Refresh the list after updating
+            const response = await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', // Browser will handle multipart boundary
+                },
+            });
+            fetchAnimals(); // Refresh the animal list after updating
             setUpdateModalOpen(false);
         } catch (err) {
-            console.error('Error updating animal:', err.response ? err.response.data : err.message);
             setError('Error updating animal');
+            console.error('Error updating animal:', err.response ? err.response.data : err.message);
         }
     };
-    
 
+    const handleDeleteClick = (animal) => {
+        setAnimalToDelete(animal); 
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async (id) => {
+        try {
+            await axios.delete(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${id}`);
+            fetchAnimals(); 
+        } catch (err) {
+            setError('Error deleting animal');
+            console.error('Error deleting animal:', err.response ? err.response.data : err.message);
+        } finally {
+            setDeleteModalOpen(false); 
+        }
+    };
     // Handle clicking the edit button
     const handleEditClick = (animal) => {
         setSelectedAnimal(animal);
@@ -128,18 +185,27 @@ const AnimalList = () => {
     }
 
     return (
-        <div className="table-container"> 
+        <div className="table-container">
             <h1>Animals in the Shelter</h1>
             <Sidebar />
             <button className="add-animal-button" onClick={() => setModalOpen(true)}>
                 <FontAwesomeIcon icon={faPlus} /> Add Animal
             </button>
-            <AddAnimalModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onAddAnimal={handleAddAnimal} />
-            <UpdateAnimalModal 
-                isOpen={updateModalOpen} 
-                onClose={() => setUpdateModalOpen(false)} 
-                onUpdateAnimal={handleUpdateAnimal} 
-                animal={selectedAnimal} 
+            <AddAnimalModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onAddAnimal={handleAddAnimal}
+            />
+            <UpdateAnimalModal
+                isOpen={updateModalOpen}
+                onClose={() => setUpdateModalOpen(false)}
+                onUpdateAnimal={handleUpdateAnimal}
+                animal={selectedAnimal}
+            />
+             <DeleteConfirmationModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onDeleteConfirm={() => confirmDelete(animalToDelete?.id)} // Fix the function call here
             />
             <div className="controls">
                 <label htmlFor="entries">Show</label>
@@ -163,7 +229,7 @@ const AnimalList = () => {
                     <option value="age">Age</option>
                 </select>
             </div>
-    
+
             {filteredAnimals.length === 0 ? (
                 <p>No animals found in the shelter.</p>
             ) : (
@@ -188,10 +254,10 @@ const AnimalList = () => {
                                 <tr key={animal.id}>
                                     <td>
                                         {animal.imgurl ? (
-                                            <img 
-                                                src={animal.imgurl} 
-                                                alt={animal.name} 
-                                                className="animal-image" 
+                                            <img
+                                                src={animal.imgurl}
+                                                alt={animal.name}
+                                                className="animal-image"
                                             />
                                         ) : (
                                             <div className="paw-icon-container">
@@ -209,9 +275,13 @@ const AnimalList = () => {
                                     <td>{animal.status}</td>
                                     <td>
                                         <button onClick={() => handleEditClick(animal)}>
-                                            <FontAwesomeIcon icon={faEdit} /> 
+                                            <FontAwesomeIcon icon={faEdit} />
+                                        </button>
+                                        <button onClick={() => handleDeleteClick(animal)} className="delete-button">
+                                            <FontAwesomeIcon icon={faTrash} />
                                         </button>
                                         <button onClick={() => handleViewClick(animal.id)}>View Details</button>
+                                        
                                     </td>
                                 </tr>
                             ))}
