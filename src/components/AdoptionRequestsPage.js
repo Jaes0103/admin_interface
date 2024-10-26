@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../style/AdoptionRequestsPage.css'; // Ensure your CSS file path is correct
+import '../style/AdoptionRequestsPage.css';     
 
 const AdoptionRequestsPage = () => {
     const [adoptionRequests, setAdoptionRequests] = useState([]);

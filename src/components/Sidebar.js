@@ -17,7 +17,7 @@ const Sidebar = () => {
 
   const confirmLogout = () => {
     logout(); 
-    navigate('/login'); 
+    navigate('/'); 
     alert("Successfully logged out!"); 
   };
 
