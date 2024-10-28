@@ -1,25 +1,59 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'development', // or 'production'
+  // Set the mode to development or production
+  mode: 'development', // Change to 'production' for production builds
+
+  // Entry point of your application
   entry: './src/index.js',
+
+  // Output configuration
   output: {
+    filename: '[name].[contenthash].js', // Use [name] and [contenthash] for unique filenames
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    clean: true, // Clean the output directory before each build
   },
+
+  optimization: {
+    splitChunks: {
+      chunks: 'all', // Split chunks for better caching
+    },
+  },
+
+  // Module rules
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.jsx?$/, // Match .js and .jsx files
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader', 
+          loader: 'babel-loader',
         },
+      },
+      {
+        test: /\.css$/, // Match .css files
+        use: ['style-loader', 'css-loader'], // Use these loaders for CSS
+      },
+      {
+        test: /\.(png|jpg|gif|svg)$/, // Match image files
+        type: 'asset/resource', // Automatically handle image files
       },
     ],
   },
-  resolve: {
-    extensions: ['.js', '.jsx'], 
+
+  // Optimization settings
+  optimization: {
+    splitChunks: {
+      chunks: 'all', // Split chunks for better caching
+    },
   },
-  devtool: 'source-map', 
+
+  // Enable source maps for easier debugging
+  devtool: 'inline-source-map',
+
+  // DevServer configuration
+  devServer: {
+    static: './dist', // Serve files from the dist folder
+    hot: true, // Enable hot module replacement
+  },
 };
