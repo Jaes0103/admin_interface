@@ -57,7 +57,7 @@ const LoginPage = () => {
   return (
     <div className="Body-container">
       <div className="login-container">
-        <LazyImage src={logo} alt="Logo" className="logo"/>
+        <LazyImage src={logo} alt="Logo" className="logo" width={150} height={50} /> {/* Set dimensions */}
         <h2 className="login-title">{forgotPasswordMode ? 'Forgot Password' : 'Log In'}</h2>
         <h3 className="login-title">Welcome Back 👋</h3>
 

@@ -4,7 +4,6 @@ import LoadingSpinner from './components/LoadingSpinner';
 import PrivateRoute from './config/PrivateRoute';
 import { useAuth } from './context/AuthContext';
 
-// Lazy load components
 const Login = lazy(() => import('./components/LoginPage'));
 const Register = lazy(() => import('./components/RegisterPage'));
 const Dashboard = lazy(() => import('./components/DashboardPage'));
