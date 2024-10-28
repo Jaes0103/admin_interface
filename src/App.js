@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoadingSpinner from './components/LoadingSpinner'; // Optional: A loading spinner component
+import LoadingSpinner from './components/LoadingSpinner'; 
 import PrivateRoute from './config/PrivateRoute';
 import { useAuth } from './context/AuthContext';
 
