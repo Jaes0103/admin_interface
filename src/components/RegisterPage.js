@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../style/RegisterPage.css'; // Assuming you have corresponding styles
+import '../style/RegisterPage.css'; 
 import logo from '../assets/images/bantay_hayop_logo.png';
+import LazyImage from './LazyImages';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -47,7 +48,7 @@ const RegisterPage = () => {
 
   return (
     <div className="register-container">
-      <img src={logo} alt="Logo" className="logo" />
+      <LazyImage src={logo} alt="Logo" className="logo" loading="lazy"  />
       <h2 className="register-title">Register</h2>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}

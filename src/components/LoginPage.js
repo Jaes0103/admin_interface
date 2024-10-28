@@ -6,6 +6,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Icon } from '@mui/material';
 import logo from '../assets/images/bantay_hayop_logo.png';
 import { useAuth } from '../context/AuthContext';
+import LazyImage from './LazyImages';
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -15,14 +16,14 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [resetMessage, setResetMessage] = useState('');
-  const [loading, setLoading] = useState(false); // Loading state
-  const [resetSuccess, setResetSuccess] = useState(false); // Success state
+  const [loading, setLoading] = useState(false); 
+  const [resetSuccess, setResetSuccess] = useState(false); 
   const navigate = useNavigate();
 
   // Login form submission
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
+    setLoading(true); 
     try {
       const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/login`, { email, password });
       const { token, authId, userData } = response.data; 
@@ -56,7 +57,7 @@ const LoginPage = () => {
   return (
     <div className="Body-container">
       <div className="login-container">
-        <img src={logo} alt="Logo" className="logo" />
+        <LazyImage src={logo} alt="Logo" className="logo"/>
         <h2 className="login-title">{forgotPasswordMode ? 'Forgot Password' : 'Log In'}</h2>
         <h3 className="login-title">Welcome Back 👋</h3>
 
