@@ -57,12 +57,12 @@ body {
 
 .login-title h2 {
   font-weight: bold; /* Bold text */
-  font-size: 75px; /* Title size increased to 75px */
+  font-size: px; /* Title size */
 }
 
 .login-title h3 {
   font-weight: bold; /* Bold text */
-  font-size: 55px; /* Title size increased to 55px */
+  font-size: 45px; /* Title size */
 }
 
 /* Error Message Styles */
