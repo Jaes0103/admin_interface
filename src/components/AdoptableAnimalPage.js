@@ -4,6 +4,7 @@ import '../style/AdoptableAnimalsPage.css';
 import { FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import Sidebar from './Sidebar';
+import ErrorModal from '../style/ErrorModal.css';
 
 const AdoptableAnimalsPage = () => {
     const [adoptableAnimals, setAdoptableAnimals] = useState([]);
@@ -11,9 +12,13 @@ const AdoptableAnimalsPage = () => {
     const [error, setError] = useState('');
     const [isModalOpen, setModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [animalToDelete, setAnimalToDelete] = useState(null);
     const [deleteMessage, setDeleteMessage] = useState('');
+    const [adoptionRequestToDelete, setAdoptionRequestToDelete] = useState(null);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [success, setSuccess] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
     const [newAnimal, setNewAnimal] = useState({
         id: null,
         name: '',
@@ -30,10 +35,8 @@ const AdoptableAnimalsPage = () => {
         imgurl: '',
     });
 
-    // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5; // Set how many items per page
-
+    const itemsPerPage = 5; 
     const fetchAdoptableAnimals = async () => {
         try {
             const url = `${process.env.REACT_APP_BASE_URL}/api/admin/adoptable-animals`;
@@ -78,16 +81,20 @@ const AdoptableAnimalsPage = () => {
                 },
             });
 
+            const updatedAnimal = response.data;
+
             if (editMode) {
                 setAdoptableAnimals((prev) =>
-                    prev.map((animal) => (animal.id === newAnimal.id ? response.data : animal))
+                    prev.map((animal) => (animal.id === updatedAnimal.id ? updatedAnimal : animal))
                 );
             } else {
-                setAdoptableAnimals((prev) => [...prev, response.data]);
+                setAdoptableAnimals((prev) => [...prev, updatedAnimal]);
             }
 
             resetForm();
             setModalOpen(false);
+            setCurrentPage(1);
+
         } catch (err) {
             console.error('Error adding/updating animal:', err);
             setError(editMode ? 'Error updating animal' : 'Error adding animal');
@@ -99,56 +106,56 @@ const AdoptableAnimalsPage = () => {
         setEditMode(true);
         setModalOpen(true);
     };
-
-    const handleDelete = async (animalId) => {
-        const url = `${process.env.REACT_APP_BASE_URL}/api/admin/delete-adoptable-animal/${animalId}`;
-    
-        try {
-            await axios.delete(url);
-            setAdoptableAnimals((prev) => prev.filter((animal) => animal.id !== animalId));
-        } catch (error) {
-            console.error('Delete error:', error); // Log the entire error response
-    
-            if (error.response && error.response.status === 400) {
-                const requests = error.response.data.requests;
-                if (requests && requests.length > 0) {
-                    const requestMessage = requests.map(req => `Request ID: ${req.id}, User: ${req.user_id}`).join('\n');
-                    setDeleteMessage(`This animal has existing adoption requests:\n${requestMessage}\nClick "OK" to dismiss.`);
-                    setAnimalToDelete(animalId);
-                    setDeleteModalOpen(true);
-                } else {
-                    setError('This animal cannot be deleted due to existing processes.');
-                }
-            } else {
-                console.error('Error deleting animal:', error);
-                setError('Error deleting animal');
-            }
-        }
+    const handleDeleteAdoptionRequest = (requestId) => {
+        setAdoptionRequestToDelete(requestId);
+        setDeleteMessage('Are you sure you want to delete this adoption request? This action cannot be undone.');
+        setIsDeleteModalOpen(true); 
     };
-    
+    const handleDelete = (animalId) => {
+        console.log('Deleting animal with ID:', animalId);
+        setAnimalToDelete(animalId);
+        setDeleteMessage('Are you sure you want to delete this animal? This action cannot be undone.');
+        setIsDeleteModalOpen(true); 
+    };
+
     const confirmDelete = async () => {
-        console.log(`Attempting to confirm delete for animal ID: ${animalToDelete}`);
-        const url = `${process.env.REACT_APP_BASE_URL}/api/admin/delete-adoptable-animal/${animalToDelete}`;
-        
-        try {
-            await axios.delete(url);
-            setAdoptableAnimals((prev) => prev.filter((animal) => animal.id !== animalToDelete));
-            console.log(`Successfully deleted animal ID: ${animalToDelete}`);
-        } catch (error) {
-            console.error('Error confirming delete:', error);
-            setError('Error deleting animal');
-        } finally {
-            setDeleteModalOpen(false);
-            setAnimalToDelete(null);
-            setDeleteMessage(''); 
+        console.log('Confirmed deletion for animal ID:', animalToDelete); 
+        if (animalToDelete) {
+            const url = `${process.env.REACT_APP_BASE_URL}/api/admin/delete-adoptable-animal/${animalToDelete}`;
+            try {
+                const response = await axios.delete(url);
+                console.log('Delete response:', response.data); 
+
+                if (response.status === 200) {
+                    setAdoptableAnimals((prev) => prev.filter((animal) => animal.id !== animalToDelete));
+                    setIsDeleteModalOpen(false);
+                    setAnimalToDelete(null); 
+                    setSuccess('Animal deleted successfully'); 
+                } else {
+                    setError(response.data.error || 'Error deleting animal'); 
+                }
+            } catch (error) {
+                console.error('Error confirming delete:', error);
+                if (error.response) {
+                    setError(error.response.data.error || 'Error deleting animal');
+                } else {
+                    setError('Network error or server did not respond');
+                }
+            }
         }
     };
 
     const cancelDelete = () => {
-        setDeleteModalOpen(false);
-        setAnimalToDelete(null);
+        setIsDeleteModalOpen(false);
+        setAnimalToDelete(null); 
+        setError(null); 
+        setSuccess(null); 
     };
 
+    const closeErrorModal = () => {
+        setIsErrorModalOpen(false); 
+        setErrorMessage(''); 
+    };
     const resetForm = () => {
         setNewAnimal({
             id: null,
@@ -173,9 +180,7 @@ const AdoptableAnimalsPage = () => {
         setModalOpen(!isModalOpen);
     };
 
-    
     const totalPages = Math.ceil(adoptableAnimals.length / itemsPerPage);
-
     const displayedAnimals = adoptableAnimals.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const handleNextPage = () => {
@@ -356,10 +361,18 @@ const AdoptableAnimalsPage = () => {
             {isDeleteModalOpen && (
                 <ConfirmationModal
                     isOpen={isDeleteModalOpen}
-                    message={deleteMessage || "Are you sure you want to delete this animal? This action cannot be undone."}
-                    onConfirm={animalToDelete ? confirmDelete : () => setDeleteModalOpen(false)}
+                    message={deleteMessage}
+                    onConfirm={confirmDelete}
                     onCancel={cancelDelete}
-                    title={animalToDelete ? "Confirm Deletion" : "Adoption Requests Warning"}
+                    title="Confirm Deletion"
+                />
+            )}
+
+            {isErrorModalOpen && (
+                <ErrorModal
+                    isOpen={isErrorModalOpen}
+                    message={errorMessage}
+                    onClose={closeErrorModal}
                 />
             )}
             {adoptableAnimals.length === 0 ? (
@@ -412,11 +425,18 @@ const AdoptableAnimalsPage = () => {
                                         <button onClick={() => handleDelete(animal.id)}>
                                             <FaTrash />
                                         </button>
+                                        {animal.adoptionRequests && animal.adoptionRequests.map(request => (
+                                            <div key={request.id}>
+                                                <button onClick={() => handleDeleteAdoptionRequest(request.id)}>
+                                                    Delete Request
+                                                </button>
+                                            </div>
+                                        ))}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
+                    </table>    
                     <div className="pagination">
                         <button onClick={handlePrevPage} disabled={currentPage === 1}>
                             <FaChevronLeft />
