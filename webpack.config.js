@@ -2,21 +2,21 @@ const path = require('path');
 
 module.exports = {
   // Set the mode to development or production
-  mode: 'development', // Change to 'production' for production builds
+  mode: 'production', // Change to 'production' for production builds
 
   // Entry point of your application
   entry: './src/index.js',
 
   // Output configuration
   output: {
-    filename: '[name].[contenthash].js', // Use [name] and [contenthash] for unique filenames
+    filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true, // Clean the output directory before each build
+    clean: true, 
   },
 
   optimization: {
     splitChunks: {
-      chunks: 'all', // Split chunks for better caching
+      chunks: 'all', 
     },
   },
 
