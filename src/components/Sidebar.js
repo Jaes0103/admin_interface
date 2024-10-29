@@ -28,7 +28,7 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2>Admin Menu</h2>
+        <h2>Admin</h2>
       </div>
       <ul className="sidebar-list">
         <li>

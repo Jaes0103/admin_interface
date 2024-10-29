@@ -9,6 +9,7 @@ import AddAnimalModal from '../components/AddAnimalModal';
 import UpdateAnimalModal from '../components/UpdateAnimalModal';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 
+
 const AnimalList = () => {
     const [animals, setAnimals] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,16 +104,16 @@ const AnimalList = () => {
         formData.append('gender', updatedAnimal.gender);
 
         if (updatedAnimal.imgFile) {
-            formData.append('imgFile', updatedAnimal.imgFile); // Include the image file if one is selected
+            formData.append('imgFile', updatedAnimal.imgFile); 
         }
 
         try {
             const response = await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/animals/${id}`, formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data', // Browser will handle multipart boundary
+                    'Content-Type': 'multipart/form-data', 
                 },
             });
-            fetchAnimals(); // Refresh the animal list after updating
+            fetchAnimals(); 
             setUpdateModalOpen(false);
         } catch (err) {
             setError('Error updating animal');
@@ -205,7 +206,7 @@ const AnimalList = () => {
              <DeleteConfirmationModal
                 isOpen={deleteModalOpen}
                 onClose={() => setDeleteModalOpen(false)}
-                onDeleteConfirm={() => confirmDelete(animalToDelete?.id)} // Fix the function call here
+                onDeleteConfirm={() => confirmDelete(animalToDelete?.id)} 
             />
             <div className="controls">
                 <label htmlFor="entries">Show</label>

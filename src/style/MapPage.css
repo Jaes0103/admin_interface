@@ -71,3 +71,27 @@ html, body, #root {
     padding: 10px; /* Padding for better appearance */
     border-radius: 5px; /* Rounded corners for the header */
 }
+.legend {
+    position: absolute;
+    top: 100px; 
+    left: 400px; 
+    z-index: 1000; /* Ensure it is above other elements */
+    background: rgba(255, 255, 255, 0.514); /* Slightly transparent background for visibility */
+    padding: 10px; /* Padding for better appearance */
+    border-radius: 5px; /* Rounded corners for the header */
+}
+
+/* Legend item styling */
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0; 
+}
+
+/* Legend color box styling */
+.legend-color {
+    width: 20px; 
+    height: 20px;
+    border-radius: 3px; 
+    margin-right: 10px; 
+}

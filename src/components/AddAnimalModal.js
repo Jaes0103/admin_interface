@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import "../style/AddAnimalModal.css"
 
 const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
     const [name, setName] = useState('');
@@ -53,8 +54,8 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="modal">
-            <div className="modal-content">
+        <div className="modal-overlay"> {/* Modal overlay for background */}
+            <div className="modal-content"> {/* Modal content area */}
                 <h2>Add New Animal</h2>
                 <form onSubmit={handleSubmit}>
                     <input
@@ -136,4 +137,3 @@ const AddAnimalModal = ({ isOpen, onClose, onAddAnimal }) => {
 };
 
 export default AddAnimalModal;
-    

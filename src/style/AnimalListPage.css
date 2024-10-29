@@ -7,6 +7,23 @@
     font-family: 'Montserrat', sans-serif; /* Apply font-family to the main container */
     background-color: #d0b190; /* Background color */
     min-height: 100vh; /* Full height for the page */
+    /* Add this if you want to center it horizontally */
+    display: flex; /* Enable flexbox */
+    justify-content: center; /* Center horizontally */
+}
+
+.table-container {
+    padding: 100px; 
+    background-color: #ffffff; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+    width: 100%; 
+    max-width: 1200px; 
+    min-width: 800px;
+    min-height: 1000px; 
+    max-height: 1000px;
+    margin-top: 30px;
+    margin-left: 550px; 
 }
 
 /* Control Elements */
@@ -55,7 +72,7 @@
 }
 
 .icon-button:hover {
-    color: #4a3e86; /* Darker shade on hover */
+    color: #6351a2; /* Darker shade on hover */
 }
 /* Animal Table */
 .animal-table {
@@ -83,15 +100,15 @@
 }
 
 .animal-table tbody td {
-    font-weight: 400; /* Regular weight for body text */
+    font-weight: 400; 
 }
 
 .animal-table tbody tr:nth-child(odd) {
-    background-color: #e5e1ff; /* Light purple for odd rows */
+    background-color: #e8e8ec; /* Light purple for odd rows */
 }
 
 .animal-table tbody tr:nth-child(even) {
-    background-color: #dfeefa; /* Light blue for even rows */
+    background-color: #e0e1e2; /* Light blue for even rows */
 }
 
 /* Image Styling */
@@ -120,7 +137,7 @@
 /* Button Styling */
 button {
     padding: 10px 15px; /* Padding for buttons */
-    background-color: #6351a2; /* Button background color */
+    background-color: #7964c5; /* Button background color */
     color: white; /* Button text color */
     border: none; /* No border */
     border-radius: 5px; /* Rounded corners */
@@ -129,7 +146,7 @@ button {
 }
 
 button:hover {
-    background-color: #4a3e86; /* Darker shade on hover */
+    background-color: #7964c5; /* Darker shade on hover */
 }
 
 /* Pagination Styles */
@@ -193,17 +210,6 @@ button:hover {
     }
 }
 
-.table-container {
-    padding: 20px; 
-    background-color: #ffffff; 
-    border-radius: 10px; 
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
-    width: 100%; 
-    max-width: 1200px; 
-    min-width: 800px;
-    min-height: 900px; 
-    max-height: 1000px; 
-}
 .modal-overlay {
     position: fixed;
     top: 0;

@@ -10,7 +10,7 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
     const [status, setStatus] = useState('');
     const [imgFile, setImgFile] = useState(null); // State for image file
     const [gender, setGender] = useState('');
-    const [imgPreview, setImgPreview] = useState(''); // State for image preview
+    const [background, setBackground] = useState(''); // State for background text field
 
     useEffect(() => {
         if (animal) {
@@ -21,44 +21,43 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
             setLocation(animal.location);
             setPersonality(animal.personality);
             setStatus(animal.status);
-            setGender(animal.gender || ''); // Set gender from animal data
-
-            // Resetting the image file and preview when the animal changes
-            setImgFile(null);
-            setImgPreview(animal.imgurl || ''); // Set preview to existing image URL if available
+            setGender(animal.gender);
+            setBackground(animal.background);
         }
     }, [animal]);
 
     const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        setImgFile(file); // Update state with selected file
-
-        // Generate image preview URL
-        if (file) {
-            const previewUrl = URL.createObjectURL(file);
-            setImgPreview(previewUrl);
-        } else {
-            setImgPreview(''); // Clear preview if no file is selected
-        }
+        setImgFile(e.target.files[0]);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const updatedAnimal = { name, type, age, breed, location, personality, status, gender };
+        
+        const updatedAnimal = { 
+            name, 
+            type, 
+            age, 
+            breed, 
+            location, 
+            personality, 
+            status, 
+            gender,
+            background
+        };
 
-        // If an image file is selected, add it to the updatedAnimal object
         if (imgFile) {
             updatedAnimal.imgFile = imgFile; // Include the image file in the object
         }
 
         onUpdateAnimal(animal.id, updatedAnimal);
+        onClose(); // Close the modal after submitting
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="modal">
-            <div className="modal-content">
+        <div className="modal-overlay"> {/* Modal overlay for background */}
+            <div className="modal-content"> {/* Modal content area */}
                 <h2>Update Animal</h2>
                 <form onSubmit={handleSubmit}>
                     <input
@@ -110,19 +109,18 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
                         placeholder="Status"
                         required
                     />
-                    {/* Image input for picking the image */}
+                    <input
+                        type="text"
+                        value={background}
+                        onChange={(e) => setBackground(e.target.value)}
+                        placeholder="Background"
+                        required
+                    />
                     <input
                         type="file"
-                        onChange={handleImageChange} // Handle file selection
-                        accept="image/*" // Accept only image files
+                        onChange={handleImageChange}
+                        accept="image/*"
                     />
-                    {/* Show image preview if available */}
-                    {imgPreview && (
-                        <div className="image-preview">
-                            <h3>Image Preview:</h3>
-                            <img src={imgPreview} alt="Image Preview" style={{ width: '100%', height: 'auto' }} />
-                        </div>
-                    )}
                     <input
                         type="text"
                         value={gender}

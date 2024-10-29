@@ -22,34 +22,40 @@ const CreateRescuer = () => {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false); // Loading state
-    const [passwordStrengthValue, setPasswordStrengthValue] = useState(0); // Password strength
-    const [rescuers, setRescuers] = useState([]); // State for rescuers
-    const [loadingRescuers, setLoadingRescuers] = useState(false); // Loading state for rescuers
-    const [errorRescuers, setErrorRescuers] = useState(''); // Error state for rescuers
+    const [loading, setLoading] = useState(false);
+    const [passwordStrengthValue, setPasswordStrengthValue] = useState(0);
+    const [rescuers, setRescuers] = useState([]);
+    const [loadingRescuers, setLoadingRescuers] = useState(false);
+    const [errorRescuers, setErrorRescuers] = useState('');
 
     useEffect(() => {
-        fetchRescuers(); // Fetch rescuers on component mount
+        fetchRescuers();
     }, []);
 
     const fetchRescuers = async () => {
-        setLoadingRescuers(true); // Start loading rescuers
+        setLoadingRescuers(true);
         try {
             const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/admin/rescuers`);
-            setRescuers(response.data); // Set rescuers data
+            setRescuers(response.data);
+            console.log('Fetched rescuers:', response.data); // Log the fetched data
+            // Check how isValidated is being interpreted
+            response.data.forEach(rescuer => {
+                console.log(`Rescuer: ${rescuer.name}, isValidated: ${rescuer.isValidated}`);
+            });
         } catch (error) {
             console.error('Error fetching rescuers:', error);
             setErrorRescuers('Error fetching rescuers. Please try again later.');
-        } finally { 
-            setLoadingRescuers(false); 
+        } finally {
+            setLoadingRescuers(false);
         }
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage('');
         setError('');
-        setLoading(true); 
+        setLoading(true);
 
         try {
             const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/admin/create-rescuer`, {
@@ -58,12 +64,12 @@ const CreateRescuer = () => {
                 password,
             });
 
-            setMessage(response.data.msg); 
+            setMessage(response.data.msg);
             setName('');
             setEmail('');
             setPassword('');
-            setPasswordStrengthValue(0); // Reset password strength
-            fetchRescuers(); // Refresh the list of rescuers
+            setPasswordStrengthValue(0);
+            fetchRescuers();
         } catch (err) {
             console.error(err);
             if (err.response && err.response.data) {
@@ -72,18 +78,18 @@ const CreateRescuer = () => {
                 setError('Server error. Please try again later.');
             }
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
     const handlePasswordChange = (e) => {
         const newPassword = e.target.value;
         setPassword(newPassword);
-        setPasswordStrengthValue(passwordStrength(newPassword)); // Update password strength
+        setPasswordStrengthValue(passwordStrength(newPassword));
     };
 
     return (
-        <div style={{ display: 'flex' }}>
+        <div className="container">
             <Sidebar />
             <div className="form-container">
                 <h2>Create Rescuer Account</h2>
@@ -117,11 +123,13 @@ const CreateRescuer = () => {
                             onChange={handlePasswordChange}
                             required
                         />
-                        {/* Password Strength Indicator */}
                         <div className="password-strength">
                             <div
                                 className="strength-meter"
-                                style={{ width: `${(passwordStrengthValue / 5) * 100}%`, backgroundColor: getStrengthColor(passwordStrengthValue) }}
+                                style={{
+                                    width: `${(passwordStrengthValue / 5) * 100}%`,
+                                    backgroundColor: getStrengthColor(passwordStrengthValue),
+                                }}
                             />
                             <p>Password strength: {getStrengthLabel(passwordStrengthValue)}</p>
                         </div>
@@ -132,28 +140,28 @@ const CreateRescuer = () => {
                 </form>
                 {message && <p className="success-message">{message}</p>}
                 {error && <p className="error-message">{error}</p>}
-                
             </div>
-            {/* Rescuers List Section */}
+            
             <div className="rescuers-list">
-                    <h2>Rescuers</h2>
-                    {loadingRescuers && <p>Loading rescuers...</p>} {/* Loading message for rescuers */}
-                    <h3>Validated Rescuers</h3>
-                    <ul>
-                        {rescuers.filter(rescuer => rescuer.isValidated).map(rescuer => (
-                            <li key={rescuer.id}>{rescuer.name} - {rescuer.email}</li>
-                        ))}
-                    </ul>
-                    <h3>Unvalidated Rescuers</h3>
-                    <ul>
-                        {rescuers.filter(rescuer => !rescuer.isValidated).map(rescuer => (
-                            <li key={rescuer.id}>{rescuer.name} - {rescuer.email}</li>
-                        ))}
-                    </ul>
-                </div>
+                <h2>Rescuers</h2>
+                {loadingRescuers && <p>Loading rescuers...</p>}
+                <h3>Validated Rescuers</h3>
+                <ul>
+                    {rescuers.filter(rescuer => rescuer.isValidated).map(rescuer => (
+                        <li key={rescuer.id}>{rescuer.name} - {rescuer.email}</li>
+                    ))}
+                </ul>
+                <h3>Unvalidated Rescuers</h3>
+                <ul>
+                    {rescuers.filter(rescuer => !rescuer.isValidated).map(rescuer => (
+                        <li key={rescuer.id}>{rescuer.name} - {rescuer.email}</li>
+                    ))}
+                </ul>
+
+            </div>
         </div>
     );
-};
+}
 
 // Helper functions for strength feedback
 const getStrengthColor = (strength) => {

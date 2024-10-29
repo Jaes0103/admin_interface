@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../style/AdoptionRequestsPage.css';     
 
+
 const AdoptionRequestsPage = () => {
     const [adoptionRequests, setAdoptionRequests] = useState([]);
     const [loading, setLoading] = useState(true);

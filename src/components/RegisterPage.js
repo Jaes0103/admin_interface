@@ -47,50 +47,52 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="register-container">
-      <LazyImage src={logo} alt="Logo" className="logo" loading="lazy"  />
-      <h2 className="register-title">Register</h2>
-      {error && <p className="error-message">{error}</p>}
-      {success && <p className="success-message">{success}</p>}
-      <form onSubmit={handleRegister} className="register-form">
-        <label className="input-label" htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="input-field"
-          required
-        />
+    <div className="register-wrapper"> 
+      <div className="register-container">
+        <LazyImage src={logo} alt="Logo" className="logo" loading="lazy"  />
+        <h2 className="register-title">Register</h2>
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
+        <form onSubmit={handleRegister} className="register-form">
+          <label className="input-label" htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input-field"
+            required
+          />
 
-        <label className="input-label" htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="input-field"
-          required
-        />
+          <label className="input-label" htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input-field"
+            required
+          />
 
-        <label className="input-label" htmlFor="confirmPassword">Confirm Password</label>
-        <input
-          id="confirmPassword"
-          type="password"
-          placeholder="Confirm password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="input-field"
-          required
-        />
+          <label className="input-label" htmlFor="confirmPassword">Confirm Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="input-field"
+            required
+          />
 
-        <button type="submit" className="register-button">Register</button>
-      </form>
-      <p className="login-link">
-        Already have an account? <a href="/">Log In</a>
-      </p>
+          <button type="submit" className="register-button">Register</button>
+        </form>
+        <p className="login-link">
+          Already have an account? <a href="/">Log In</a>
+        </p>
+      </div>
     </div>
   );
 };

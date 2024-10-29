@@ -5,6 +5,8 @@ import { FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import Sidebar from './Sidebar';
 import ErrorModal from '../style/ErrorModal.css';
+import ApproveRequestModal from './ApproveRequestModal';
+
 
 const AdoptableAnimalsPage = () => {
     const [adoptableAnimals, setAdoptableAnimals] = useState([]);
@@ -19,6 +21,14 @@ const AdoptableAnimalsPage = () => {
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [success, setSuccess] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const [selectedRequestId, setSelectedRequestId] = useState(null);
+    const [requestId, setRequestId] = useState(null);
+    const [setIsModalOpen] = useState(false);
+    const [adoptionRequests, setAdoptionRequests] = useState([]);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isApproveModalOpen, setIsApproveModalOpen] = useState(false); // Modal state for approval
+    const [requestToApprove, setRequestToApprove] = useState(null); // Track the request being approved
+    const [adoptionFee, setAdoptionFee] = useState(''); 
     const [newAnimal, setNewAnimal] = useState({
         id: null,
         name: '',
@@ -34,7 +44,9 @@ const AdoptableAnimalsPage = () => {
         img: null,
         imgurl: '',
     });
-
+    const [updatingRequestId, setUpdatingRequestId] = useState(null);
+    const [newStatus, setNewStatus] = useState('');
+    const [newLocation, setNewLocation] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5; 
     const fetchAdoptableAnimals = async () => {
@@ -49,11 +61,53 @@ const AdoptableAnimalsPage = () => {
             setLoading(false);
         }
     };
-
+    const fetchAdoptionRequests = async () => {
+        try {
+            const url = `${process.env.REACT_APP_BASE_URL}/api/admin/adoption-requests`;
+            const response = await axios.get(url);
+            console.log('Fetched adoption requests:', response.data.adoptionRequests);
+            setAdoptionRequests(response.data.adoptionRequests);
+        } catch (err) {
+            console.error('Error fetching adoption requests:', err);
+            setError('Error fetching adoption requests');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const handleApproveRequest = (request) => {
+        console.log('Request to approve:', request); // Should log the full request object
+        setRequestToApprove(request);
+        setAdoptionFee('');
+        setIsApproveModalOpen(true);
+    };
+    
+    const handleApprove = async (fee) => {
+        console.log('Approving request ID:', requestToApprove?.id); // Check ID here
+        if (!requestToApprove || !requestToApprove.id) {
+            console.error('No request to approve or request ID is missing');
+            return;
+        }
+    
+        try {
+            console.log(`Sending PUT request to: /api/admin/adoption_requests/${requestToApprove.id}`);
+            const response = await axios.put(`${process.env.REACT_APP_BASE_URL}/api/admin/adoption-requests/${requestToApprove.id}`, {
+                adoption_fee: parseFloat(fee), // Send only the adoption fee to the backend
+            });
+            console.log('Approval response:', response.data); // Log the response
+        } catch (error) {
+            console.error('Error approving request:', error);
+        } finally {
+            setIsApproveModalOpen(false);
+            setRequestToApprove(null);
+            setAdoptionFee('');
+        }
+    };
+    
     useEffect(() => {
         fetchAdoptableAnimals();
+        fetchAdoptionRequests();
     }, []);
-
     const handleAnimalChange = (e) => {
         const { name, value } = e.target;
         setNewAnimal({ ...newAnimal, [name]: value });
@@ -195,6 +249,7 @@ const AdoptableAnimalsPage = () => {
         }
     };
 
+    
     if (loading) {
         return <p>Loading adoptable animals...</p>;
     }
@@ -448,6 +503,53 @@ const AdoptableAnimalsPage = () => {
                     </div>
                 </>
             )}
+             {/* Adoption Requests Table */}
+             <div className="table-container">
+                <h2>Adoption Requests</h2>
+                <table className="adoptable-animals-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact Number</th>
+                            <th>Animal Name</th>
+                            <th>Status</th>
+                            <th>Adopt Fee</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {adoptionRequests.length > 0 ? (
+                            adoptionRequests.map((request) => (
+                                <tr key={request.id}>
+                                    <td>{request.reporter_name}</td>
+                                    <td>{request.phone_number}</td>
+                                    <td>{request.name}</td>
+                                    <td>{request.status}</td>
+                                    <td>{request.adoption_fee}</td>
+                                    <td>
+                                        <button className="approve-button" onClick={() => handleApproveRequest(request)}>
+                                            Approve
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="6">No adoption requests found.</td>
+                            </tr>
+                        )}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <ApproveRequestModal
+                isOpen={isApproveModalOpen}
+                onClose={() => setIsApproveModalOpen(false)}
+                onApprove={handleApprove}
+                adoptionFee={adoptionFee}
+                setAdoptionFee={setAdoptionFee}
+            />
         </div>
     );
 };
