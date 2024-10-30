@@ -56,8 +56,8 @@ const UpdateAnimalModal = ({ isOpen, onClose, onUpdateAnimal, animal }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay"> {/* Modal overlay for background */}
-            <div className="modal-content"> {/* Modal content area */}
+        <div className="modal-overlay"> 
+            <div className="modal-content"> 
                 <h2>Update Animal</h2>
                 <form onSubmit={handleSubmit}>
                     <input

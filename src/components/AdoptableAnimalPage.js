@@ -503,8 +503,7 @@ const AdoptableAnimalsPage = () => {
                     </div>
                 </>
             )}
-             {/* Adoption Requests Table */}
-             <div className="table-container">
+            <div className="table-container">
                 <h2>Adoption Requests</h2>
                 <table className="adoptable-animals-table">
                     <thead>

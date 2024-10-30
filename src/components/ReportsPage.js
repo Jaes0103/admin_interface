@@ -250,12 +250,7 @@ const ReportsPage = () => {
             <th>Animal Type</th>
             <th>Details</th>
             <th>Cruelty Details</th>
-            <th>
-              <span>Date Created</span>
-              <button onClick={toggleReportOrder} className="toggle-button">
-                <FaSort />
-              </button>
-            </th>
+            <th>Date Created</th>
             <th>Accident Date</th>
             <th>Status</th>
             <th>Image</th>

@@ -1,9 +1,13 @@
 /* General Page Styles */
+
 .report-details-container {
   padding: 20px; /* Padding around the container */
   background-color: #f9f9f9; /* Light background for the page */
-  min-height: 100vh; /* Ensure the container takes full height */
+  min-height: 900px; /* Ensure the container takes full height */
   margin-left: 350px;
+  margin-top: 50px;
+  overflow: auto;
+
 }
 
 /* Table Styles */

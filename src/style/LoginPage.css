@@ -6,15 +6,32 @@
 /* Body Styles */
 body {
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  background-size: cover; /* Ensures the image covers the area */
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
   background-image: url('../assets/images/bantay_hayop_logo.png');
-  background-attachment: fixed; /* Keeps the background fixed */
-  background-position: left; /* Centers the background image */
-  height: 100vh; /* Sets the height to 100% of the viewport height */
-  margin: 0; /* Removes default margin */
+  background-attachment: fixed;
+  background-position: center;
+  height: 100vh;
+  margin: 0;
+  position: relative;
+  overflow: hidden; /* Prevents content from overflowing */
 }
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: inherit; /* Same image as background */
+  background-size: cover;
+  background-position: center;
+  filter: blur(10px); /* Adjust the blur level here */
+  z-index: -1; /* Places it behind content */
+}
+
 
 /* Main Container Styles */
 .Body-container {

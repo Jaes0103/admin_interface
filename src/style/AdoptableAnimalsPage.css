@@ -32,9 +32,15 @@
 .add-animal-button:hover {
     background-color: #5039c2; /* Darken on hover */
 }
-.table-container h2{
-    margin-left: 300px;
+.table-container{
+    height: 400px;
 }
+.table-container h2 {
+    margin-left: 300px;
+    margin-top: 20px;
+
+}
+
 /* Modal Overlay */
 .modal {
     display: flex;
