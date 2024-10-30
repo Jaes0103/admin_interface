@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkadmin_interface=self.webpackChunkadmin_interface||[]).push([[550],{4550:(e,n,r)=>{r.r(n),r.d(n,{default:()=>i});r(2483);var t=r(6723);const i=()=>(0,t.jsxs)("div",{style:{textAlign:"center",marginTop:"50px"},children:[(0,t.jsx)("h1",{children:"404 - Page Not Found"}),(0,t.jsx)("p",{children:"Sorry, the page you are looking for does not exist."})]})}}]);
+//# sourceMappingURL=550.e4efe1ac.chunk.js.map
